@@ -1,0 +1,96 @@
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    background: rgb(41, 41, 41);
+}
+
+body, textarea {
+    font-family: 'Ubuntu';
+}
+
+#message-input {
+    border-radius: 10px;
+    box-shadow: 2px 2px 5px #888888;
+}
+
+#chat-messages {
+    height: calc( 100% - 200px );
+    overflow: auto;
+    width: 100%;
+    max-width: 1000px;
+    text-align: left;
+    margin: 0 auto;
+}
+
+.chat-message {
+    border-radius: 10px;
+    padding: 5px 15px;
+    margin: 10px 0;
+    line-height: 1.5em;
+}
+
+.incoming-message {
+    color: #fff;
+    background-color: #4a4e5a;
+}
+
+.outgoing-message {
+    color: #fff;
+    background-color: #494949;
+}
+
+#message-input {
+    margin: 20px auto;
+    resize: none;
+    border: none;
+    color: #fff;
+    background-color: #494949;
+    outline: none;
+    padding: 15px;
+    font-size: 1.1em;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 700px;
+}
+
+h1 {
+    color: #fff;
+    text-align: center;
+}
+
+code {
+    border-radius: 10px;
+    font-size: 1.1em;
+    margin: 5px;
+}
+
+#cursor {
+    width: 5px;
+    height: 20px;
+    background-color: #fff;
+    display: inline-block;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+a {
+    color: #fff;
+}
