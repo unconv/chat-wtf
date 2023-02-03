@@ -50,6 +50,8 @@ $complete = json_decode( $openai->completion( [
 // get message text
 if( isset( $complete->choices[0]->text ) ) {
     $text = str_replace( "\\n", "\n", $complete->choices[0]->text );
+} elseif( isset( $complete->error->message ) ) {
+    $text = $complete->error->message;
 } else {
     $text = "Sorry, but I don't know how to answer that.";
 }
