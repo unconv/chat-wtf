@@ -1,6 +1,5 @@
 {
     "require": {
-        "orhanerday/open-ai": "*",
-        "league/commonmark": "^2.3"
+        "orhanerday/open-ai": "*"
     }
 }

@@ -8,7 +8,6 @@ require_once(__DIR__."/vendor/autoload.php");
 $settings = require( __DIR__ . "/settings.php" );
 
 use Orhanerday\OpenAi\OpenAi;
-use League\CommonMark\CommonMarkConverter;
 
 $context = json_decode( $_GET['context'] ?? "[]" ) ?: [];
 
