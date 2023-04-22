@@ -9,6 +9,7 @@ $settings = require( __DIR__ . "/settings.php" );
 
 use Orhanerday\OpenAi\OpenAi;
 
+// @todo: save context in a session
 $context = json_decode( $_GET['context'] ?? "[]" ) ?: [];
 
 // initialize OpenAI api

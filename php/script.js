@@ -22,6 +22,7 @@ function send_message() {
     message_input.value = "";
     
     // send message and listen for tokens
+    // @todo: send message as POST?
     const eventSource = new EventSource(
         "/message.php?message=" + encodeURIComponent( question ) +
         "&context=" + encodeURIComponent( JSON.stringify( context ) )
@@ -67,6 +68,7 @@ function add_message( direction, message ) {
 
 function update_message( message, new_message ) {
     // replace \n with newline
+    // @todo: fix interpreting literal "\n"
     new_message = new_message.replace( /\\n/g, "\n" );
 
     // add ending code block tags when missing
