@@ -3,6 +3,8 @@ const message_list = document.querySelector( "#chat-messages" );
 
 const context = [];
 
+const markdown_converter = new showdown.Converter();
+
 message_input.addEventListener( "keyup", function( e ) {
     if( e.keyCode == 13 && !e.shiftKey ) {
         add_message( "outgoing", message_input.value );
@@ -15,22 +17,21 @@ function send_message() {
     let message = add_message( "incoming", '<div id="cursor"></div>' );
     message_input.value = "";
     
-    fetch( "message.php", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: "message=" + encodeURIComponent( question ) + "&context=" + encodeURIComponent( JSON.stringify( context ) )
-    } )
-    .then( response => response.text() )
-    .then( data => {
-        const json = JSON.parse( data );
-        if( json.status == "success" ) {
-            update_message( message, json.message );
-            context.push([question, json.raw_message]);
-        }
-        message_input.focus();
+    const eventSource = new EventSource( "/message.php?message=" + encodeURIComponent( question ) + "&context=" + encodeURIComponent( JSON.stringify( context ) ) );
+
+    let response = "";
+
+    eventSource.addEventListener( "message", function( event ) {
+        response += event.data;
+        update_message( message, response );
     } );
+
+    eventSource.addEventListener( "stop", function( event ) {
+        eventSource.close();
+        context.push([question, response]);
+    } );
+
+    message_input.focus();
 }
 
 function add_message( direction, message ) {
@@ -45,6 +46,14 @@ function add_message( direction, message ) {
 }
 
 function update_message( message, new_message ) {
+    new_message = new_message.replace( /\\n/g, "\n" );
+
+    let code_block_count = (new_message.match(/```/g) || []).length;
+    if( code_block_count % 2 !== 0 ) {
+        new_message += "\n```";
+    }
+
+    new_message = markdown_converter.makeHtml( new_message );
     message.innerHTML = '<p>' + new_message + "</p>";
     message_list.scrollTop = message_list.scrollHeight;
     hljs.highlightAll();

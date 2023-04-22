@@ -1,4 +1,8 @@
 <?php
+header( "Content-type: text/event-stream" );
+header( "Cache-Control: no-cache" );
+ob_end_flush();
+
 require_once(__DIR__."/vendor/autoload.php");
 
 $settings = require( __DIR__ . "/settings.php" );
@@ -6,9 +10,7 @@ $settings = require( __DIR__ . "/settings.php" );
 use Orhanerday\OpenAi\OpenAi;
 use League\CommonMark\CommonMarkConverter;
 
-header( "Content-Type: application/json" );
-
-$context = json_decode( $_POST['context'] ?? "[]" ) ?: [];
+$context = json_decode( $_GET['context'] ?? "[]" ) ?: [];
 
 // initialize OpenAI api
 $openai = new OpenAi( $settings['api_key'] );
@@ -35,7 +37,7 @@ foreach( $context as $msg ) {
 
 $messages[] = [
     "role" => "user",
-    "content" => $_POST['message'],
+    "content" => $_GET['message'],
 ];
 
 // create a new completion
@@ -46,27 +48,35 @@ $complete = json_decode( $openai->chat( [
     'max_tokens' => 2000,
     'frequency_penalty' => 0,
     'presence_penalty' => 0,
- ] ) );
+    'stream' => true,
+], function( $ch, $data ) {
+    $deltas = explode( "\n", $data );
 
-// get message text
-if( isset( $complete->choices[0]->message->content ) ) {
-    $text = str_replace( "\\n", "\n", $complete->choices[0]->message->content );
-} elseif( isset( $complete->error->message ) ) {
-    $text = $complete->error->message;
-} else {
-    $text = "Sorry, but I don't know how to answer that.";
-}
+    foreach( $deltas as $delta ) {
+        if( strpos( $delta, "data: " ) !== 0 ) {
+            continue;
+        }
 
-// log for debugging
-// error_log( $text );
+        $json = json_decode( substr( $delta, 6 ) );
 
-// convert markdown to HTML
-$converter = new CommonMarkConverter();
-$styled = $converter->convert( $text );
+        if( isset( $json->choices[0]->delta ) ) {
+            $content = $json->choices[0]->delta->content ?? "";
+        } elseif( isset( $json->error->message ) ) {
+            $content = $json->error->message;
+        } elseif( trim( $delta ) == "data: [DONE]" ) {
+            $content = "";
+        } else {
+            $content = "Sorry, but I don't know how to answer that.";
+        }
 
-// return response
-echo json_encode( [
-    "message" => (string)$styled,
-    "raw_message" => $text,
-    "status" => "success",
-] );
+        echo "data: " . str_replace( "\n", "\\n", $content ) . "\n\n";
+        flush();
+    }
+
+    if( connection_aborted() ) return 0;
+
+    return strlen( $data );
+} ) );
+
+echo "event: stop\n";
+echo "data: stopped\n\n";
