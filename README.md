@@ -1,8 +1,11 @@
+***2023-04-23:** Upgraded to the streaming version of the API (output token-by-token!)*
 ***2023-03-16:** The PHP version of the chatbot has been updated to the ChatGPT model!*
 
 # ChatWTF chatbot
 
-This ChatGPT-like chatbot was made using the OpenAI API for a YouTube video I made. You can watch the video here: https://www.youtube.com/watch?v=ru5m-BKDn6E
+This ChatGPT-like chatbot was made using the OpenAI API for a YouTube video I made. You can watch the original video here: https://www.youtube.com/watch?v=ru5m-BKDn6E
+
+Video of update to ChatGPT API: https://www.youtube.com/watch?v=0NrIv6bI5o4
 
 ## PHP, HTML, JS + CSS version
 
@@ -14,7 +17,7 @@ The PHP version uses the `gpt-3.5-turbo` engine which is the ChatGPT engine.
 
 There is a simple Python version of the chatbot in `python/chat.py`. You can run it from the command line and it will ask for a question and then give you an answer. You can exit by typing `exit` as the question (or with `Ctrl+C`)
 
-The Python version uses the `text-davinci-003` engine.
+The Python version uses the `text-davinci-003` engine. It was made in the first version of the repo, and since abandoned (at least for now)
 
 ## API key
 
