@@ -33,8 +33,10 @@ function send_message() {
 
     // when a new token arrives
     eventSource.addEventListener( "message", function( event ) {
+        let json = JSON.parse( event.data );
+
         // append token to response
-        response += event.data;
+        response += json.content;
 
         // update message in UI
         update_message( message, response );
@@ -67,10 +69,6 @@ function add_message( direction, message ) {
 }
 
 function update_message( message, new_message ) {
-    // replace \n with newline
-    // @todo: fix interpreting literal "\n"
-    new_message = new_message.replace( /\\n/g, "\n" );
-
     // add ending code block tags when missing
     let code_block_count = (new_message.match(/```/g) || []).length;
     if( code_block_count % 2 !== 0 ) {

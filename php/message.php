@@ -69,7 +69,7 @@ $complete = json_decode( $openai->chat( [
             $content = "Sorry, but I don't know how to answer that.";
         }
 
-        echo "data: " . str_replace( "\n", "\\n", $content ) . "\n\n";
+        echo "data: " . json_encode( ["content" => $content] ) . "\n\n";
         flush();
     }
 
