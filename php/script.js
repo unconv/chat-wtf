@@ -7,7 +7,7 @@ const markdown_converter = new showdown.Converter();
 
 message_input.addEventListener( "keyup", function( e ) {
     if( e.keyCode == 13 && !e.shiftKey ) {
-        add_message( "outgoing", message_input.value );
+        add_message( "outgoing", escapeHtml( message_input.value ) );
         send_message();
     }
 } );
@@ -75,12 +75,53 @@ function update_message( message, new_message ) {
         new_message += "\n```";
     }
 
-    // convert markdown to HTML
-    new_message = markdown_converter.makeHtml( new_message );
+    // convert code blocks into markdown
+    // @todo: convert single ticks as well
+    new_message = format_code_blocks( new_message );
 
     // update message content
     message.innerHTML = '<p>' + new_message + "</p>";
 
     // add code highlighting
     hljs.highlightAll();
+}
+
+/**
+ * Converts code blocks in Markdown into HTML
+ *
+ * @param {string} text Markdown formatted text
+ * @returns HTML formatted text
+ */
+function format_code_blocks( text ) {
+    let formatted_message = "";
+
+    let code_blocks = text.split("```");
+    for( let i = 0; i < code_blocks.length; i++ ) {
+        if( i % 2 === 0 ) {
+            formatted_message += escapeHtml( code_blocks[i].trim() ).replace( /\n/g, "<br>" );
+        } else {
+            formatted_message += markdown_converter.makeHtml( "```" + code_blocks[i] + "```" );
+        }
+    }
+
+    return formatted_message;
+}
+
+/**
+ * Escapes HTML special characters in a string
+ * Source: https://stackoverflow.com/questions/1787322
+ *
+ * @param {string} text Raw text
+ * @returns string Escaped HTML
+ */
+function escapeHtml( text ) {
+    var map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 }
