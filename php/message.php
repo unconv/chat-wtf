@@ -1,4 +1,5 @@
 <?php
+session_start();
 header( "Content-type: text/event-stream" );
 header( "Cache-Control: no-cache" );
 ob_end_flush();
@@ -9,8 +10,8 @@ $settings = require( __DIR__ . "/settings.php" );
 
 use Orhanerday\OpenAi\OpenAi;
 
-// @todo: save context in a session
-$context = json_decode( $_GET['context'] ?? "[]" ) ?: [];
+// get chat history from session
+$context = $_SESSION['context'] ?? [];
 
 // initialize OpenAI api
 $openai = new OpenAi( $settings['api_key'] );
@@ -26,12 +27,8 @@ if( ! empty( $settings['system_message'] ) ) {
 
 foreach( $context as $msg ) {
     $messages[] = [
-        "role" => "user",
-        "content" => $msg[0],
-    ];
-    $messages[] = [
-        "role" => "assistant",
-        "content" => $msg[1],
+        "role" => $msg["role"],
+        "content" => $msg["content"],
     ];
 }
 
@@ -39,6 +36,8 @@ $messages[] = [
     "role" => "user",
     "content" => $_GET['message'],
 ];
+
+$response_text = "";
 
 // create a new completion
 $complete = json_decode( $openai->chat( [
@@ -49,7 +48,7 @@ $complete = json_decode( $openai->chat( [
     'frequency_penalty' => 0,
     'presence_penalty' => 0,
     'stream' => true,
-], function( $ch, $data ) {
+], function( $ch, $data ) use ( &$response_text ) {
     $deltas = explode( "\n", $data );
 
     foreach( $deltas as $delta ) {
@@ -69,6 +68,8 @@ $complete = json_decode( $openai->chat( [
             $content = "Sorry, but I don't know how to answer that.";
         }
 
+        $response_text .= $content;
+
         echo "data: " . json_encode( ["content" => $content] ) . "\n\n";
         flush();
     }
@@ -77,6 +78,13 @@ $complete = json_decode( $openai->chat( [
 
     return strlen( $data );
 } ) );
+
+$messages[] = [
+    "role" => "assistant",
+    "content" => $response_text,
+];
+
+$_SESSION['context'] = $messages;
 
 echo "event: stop\n";
 echo "data: stopped\n\n";

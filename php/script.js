@@ -1,8 +1,6 @@
 const message_input = document.querySelector( "#message-input" );
 const message_list = document.querySelector( "#chat-messages" );
 
-const context = [];
-
 const markdown_converter = new showdown.Converter({
     requireSpaceBeforeHeadingText: true
 });
@@ -28,8 +26,7 @@ function send_message() {
     // send message and listen for tokens
     // @todo: send message as POST?
     const eventSource = new EventSource(
-        "/message.php?message=" + encodeURIComponent( question ) +
-        "&context=" + encodeURIComponent( JSON.stringify( context ) )
+        "/message.php?message=" + encodeURIComponent( question )
     );
 
     // intitialize ChatGPT response
@@ -48,9 +45,6 @@ function send_message() {
 
     eventSource.addEventListener( "stop", function( event ) {
         eventSource.close();
-
-        // add question and answer to context
-        context.push([question, response]);
 
         // scroll to bottom of chat
         // @todo: scroll while new tokens are added
@@ -149,3 +143,17 @@ function escapeHtml( text ) {
 
     return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 }
+
+document.addEventListener( "DOMContentLoaded", function() {
+    let messages = document.querySelectorAll( ".chat-message" );
+
+    messages.forEach( function( message ) {
+        update_message( message, message.textContent );
+    } );
+
+    let clear_chat_button = document.querySelector( ".clear-chat" );
+    clear_chat_button.addEventListener( "click", function() {
+        fetch( "/clear_chat.php" );
+        message_list.innerHTML = '';
+    } );
+} );

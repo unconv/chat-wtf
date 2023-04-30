@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,7 +12,17 @@
 </head>
 <body>
     <h1 id="header">ChatWTF</h1>
-    <div id="chat-messages"></div>
+    <button class="clear-chat">Clear chat</button>
+    <div id="chat-messages">
+        <?php
+        $chat_history = $_SESSION['context'] ?? [];
+
+        foreach( $chat_history as $chat_message ) {
+            $direction = $chat_message['role'] === "user" ? "outgoing" : "incoming";
+            echo '<div class="chat-message '.$direction.'-message">'.htmlspecialchars( $chat_message['content'] ).'</div>';
+        }
+        ?>
+    </div>
     <textarea id="message-input"></textarea>
     <script src="script.js"></script>
 </body>

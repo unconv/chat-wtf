@@ -26,6 +26,20 @@ body, textarea {
     margin: 0 auto;
 }
 
+.clear-chat {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    padding: 10px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+}
+
+.clear-chat:hover {
+    background: #d7d7d7;
+}
+
 .chat-message {
     border-radius: 10px;
     padding: 5px 15px;
