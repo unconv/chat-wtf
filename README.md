@@ -1,4 +1,5 @@
-***2023-04-23:** Upgraded to the streaming version of the API (output token-by-token!)*
+***2023-04-30:** Added chat history persistence with sessions*  
+***2023-04-23:** Upgraded to the streaming version of the API (output token-by-token!)*  
 ***2023-03-16:** The PHP version of the chatbot has been updated to the ChatGPT model!*
 
 # ChatWTF chatbot
