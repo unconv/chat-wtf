@@ -5,10 +5,12 @@ const context = [];
 
 const markdown_converter = new showdown.Converter();
 
-message_input.addEventListener( "keyup", function( e ) {
+message_input.addEventListener( "keydown", function( e ) {
     if( e.keyCode == 13 && !e.shiftKey ) {
+        e.preventDefault();
         add_message( "outgoing", escapeHtml( message_input.value ) );
         send_message();
+        return false;
     }
 } );
 
