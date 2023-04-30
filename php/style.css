@@ -60,7 +60,7 @@ body, textarea {
     max-width: 700px;
 }
 
-h1 {
+h1#header {
     color: #fff;
     text-align: center;
 }
