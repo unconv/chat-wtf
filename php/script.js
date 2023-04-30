@@ -3,7 +3,9 @@ const message_list = document.querySelector( "#chat-messages" );
 
 const context = [];
 
-const markdown_converter = new showdown.Converter();
+const markdown_converter = new showdown.Converter({
+    requireSpaceBeforeHeadingText: true
+});
 
 message_input.addEventListener( "keydown", function( e ) {
     if( e.keyCode == 13 && !e.shiftKey ) {
