@@ -4,17 +4,11 @@ header( "Content-type: text/event-stream" );
 header( "Cache-Control: no-cache" );
 ob_end_flush();
 
-require_once(__DIR__."/vendor/autoload.php");
-
 $settings = require( __DIR__ . "/settings.php" );
-
-use Orhanerday\OpenAi\OpenAi;
+require( __DIR__ . "/chatgpt.php" );
 
 // get chat history from session
 $context = $_SESSION['context'] ?? [];
-
-// initialize OpenAI api
-$openai = new OpenAi( $settings['api_key'] );
 
 $messages = [];
 
@@ -37,47 +31,12 @@ $messages[] = [
     "content" => $_GET['message'],
 ];
 
-$response_text = "";
-
 // create a new completion
-$complete = json_decode( $openai->chat( [
-    'model' => 'gpt-3.5-turbo',
-    'messages' => $messages,
-    'temperature' => 1.0,
-    'max_tokens' => 2000,
-    'frequency_penalty' => 0,
-    'presence_penalty' => 0,
-    'stream' => true,
-], function( $ch, $data ) use ( &$response_text ) {
-    $deltas = explode( "\n", $data );
-
-    foreach( $deltas as $delta ) {
-        if( strpos( $delta, "data: " ) !== 0 ) {
-            continue;
-        }
-
-        $json = json_decode( substr( $delta, 6 ) );
-
-        if( isset( $json->choices[0]->delta ) ) {
-            $content = $json->choices[0]->delta->content ?? "";
-        } elseif( isset( $json->error->message ) ) {
-            $content = $json->error->message;
-        } elseif( trim( $delta ) == "data: [DONE]" ) {
-            $content = "";
-        } else {
-            $content = "Sorry, but I don't know how to answer that.";
-        }
-
-        $response_text .= $content;
-
-        echo "data: " . json_encode( ["content" => $content] ) . "\n\n";
-        flush();
-    }
-
-    if( connection_aborted() ) return 0;
-
-    return strlen( $data );
-} ) );
+$response_text = send_chatgpt_message(
+    $messages,
+    $settings['api_key'],
+    $settings['model'],
+);
 
 $messages[] = [
     "role" => "assistant",

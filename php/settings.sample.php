@@ -14,4 +14,7 @@ return [
 
     // add an optional system message here
     "system_message" => "",
+
+    // model to use in OpenAI API
+    "model" => "gpt-3.5-turbo",
 ];
