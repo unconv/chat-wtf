@@ -29,6 +29,11 @@ function send_message() {
         base_uri + "message.php?message=" + encodeURIComponent( question )
     );
 
+    // handle errors
+    eventSource.addEventListener( "error", function() {
+        update_message( message, "Sorry, there was an error in the request. Check your error logs." );
+    } );
+
     // intitialize ChatGPT response
     let response = "";
 

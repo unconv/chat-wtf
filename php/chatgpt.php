@@ -8,6 +8,10 @@
  * 
  * @return string Response from ChatGPT
  */
+
+class CurlErrorException extends \Exception {};
+class OpenAIErrorException extends \Exception {};
+
 function send_chatgpt_message(
     array $messages,
     string $api_key,
@@ -30,6 +34,22 @@ function send_chatgpt_message(
         ] ),
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_WRITEFUNCTION => function( $ch, $data ) use ( &$response_text ) {
+            $json = json_decode( $data );
+
+            if( isset( $json->error ) ) {
+                $error  = $json->error->message;
+                $error .= " (" . $json->error->code . ")";
+                $error  = "`" . trim( $error ) . "`";
+
+                echo "data: " . json_encode( ["content" => $error] ) . "\n\n";
+
+                echo "event: stop\n";
+                echo "data: stopped\n\n";
+
+                flush();
+                die();
+            }
+
             $deltas = explode( "\n", $data );
         
             foreach( $deltas as $delta ) {
@@ -41,12 +61,10 @@ function send_chatgpt_message(
         
                 if( isset( $json->choices[0]->delta ) ) {
                     $content = $json->choices[0]->delta->content ?? "";
-                } elseif( isset( $json->error->message ) ) {
-                    $content = $json->error->message;
                 } elseif( trim( $delta ) == "data: [DONE]" ) {
                     $content = "";
                 } else {
-                    $content = "Sorry, but I don't know how to answer that.";
+                    error_log( "Invalid ChatGPT response: " . $delta );
                 }
         
                 $response_text .= $content;
@@ -64,9 +82,15 @@ function send_chatgpt_message(
     $response = curl_exec( $ch );
 
     if( ! $response ) {
-        throw new \Exception( sprintf(
+        throw new CurlErrorException( sprintf(
             "Error in OpenAI request: %s",
             curl_errno( $ch ) . ": " . curl_error( $ch )
+        ) );
+    }
+
+    if( ! $response_text ) {
+        throw new OpenAIErrorException( sprintf(
+            "Unknown in OpenAI API request"
         ) );
     }
 

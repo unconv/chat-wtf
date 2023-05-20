@@ -31,12 +31,26 @@ $messages[] = [
     "content" => $_GET['message'],
 ];
 
+$error = null;
+
 // create a new completion
-$response_text = send_chatgpt_message(
-    $messages,
-    $settings['api_key'],
-    $settings['model'] ?? "",
-);
+try {
+    $response_text = send_chatgpt_message(
+        $messages,
+        $settings['api_key'],
+        $settings['model'] ?? "",
+    );
+} catch( CurlErrorException $e ) {
+    $error = "Sorry, there was an error in the connection. Check the error logs.";
+} catch( OpenAIErrorException $e ) {
+    $error = "Sorry, there was an unknown error in the OpenAI request";
+}
+
+if( $error !== null ) {
+    $response_text = $error;
+    echo "data: " . json_encode( ["content" => $error] ) . "\n\n";
+    flush();
+}
 
 $messages[] = [
     "role" => "assistant",
