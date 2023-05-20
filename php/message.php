@@ -35,7 +35,7 @@ $messages[] = [
 $response_text = send_chatgpt_message(
     $messages,
     $settings['api_key'],
-    $settings['model'],
+    $settings['model'] ?? "",
 );
 
 $messages[] = [
