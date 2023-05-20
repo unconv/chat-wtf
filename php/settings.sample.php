@@ -17,4 +17,7 @@ return [
 
     // model to use in OpenAI API
     "model" => "gpt-3.5-turbo",
+
+    // base uri of app (e.g. /my/app/path)
+    "base_uri" => "",
 ];

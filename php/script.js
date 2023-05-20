@@ -26,7 +26,7 @@ function send_message() {
     // send message and listen for tokens
     // @todo: send message as POST?
     const eventSource = new EventSource(
-        "/message.php?message=" + encodeURIComponent( question )
+        base_uri + "message.php?message=" + encodeURIComponent( question )
     );
 
     // intitialize ChatGPT response
@@ -153,7 +153,7 @@ document.addEventListener( "DOMContentLoaded", function() {
 
     let clear_chat_button = document.querySelector( ".clear-chat" );
     clear_chat_button.addEventListener( "click", function() {
-        fetch( "/clear_chat.php" );
+        fetch( base_uri + "clear_chat.php" );
         message_list.innerHTML = '';
     } );
 } );
