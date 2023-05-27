@@ -6,6 +6,8 @@ html, body {
 
 body {
     background: rgb(41, 41, 41);
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 body, textarea {
@@ -18,18 +20,19 @@ body, textarea {
 }
 
 #chat-messages {
-    height: calc( 100% - 200px );
+    height: calc( 100% - 132px );
     overflow: auto;
     width: 100%;
     max-width: 1000px;
     text-align: left;
     margin: 0 auto;
+    border-radius: 10px;
 }
 
 .clear-chat {
     position: fixed;
-    top: 10px;
-    left: 10px;
+    top: 20px;
+    left: 20px;
     padding: 10px;
     border-radius: 12px;
     border: none;
@@ -71,12 +74,16 @@ body, textarea {
     left: 0;
     right: 0;
     width: 100%;
-    max-width: 700px;
+    max-width: calc(100% - 70px);
+    width: 700px;
 }
 
 h1#header {
     color: #fff;
     text-align: center;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.5em;
 }
 
 code {
