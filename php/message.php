@@ -8,7 +8,8 @@ $settings = require( __DIR__ . "/settings.php" );
 require( __DIR__ . "/chatgpt.php" );
 
 // get chat history from session
-$context = $_SESSION['context'] ?? [];
+$chat_id = $_GET['chat_id'];
+$context = $_SESSION['chats'][$chat_id]['messages'] ?? [];
 
 $messages = [];
 
@@ -57,7 +58,20 @@ $messages[] = [
     "content" => $response_text,
 ];
 
-$_SESSION['context'] = $messages;
+if( ! isset( $_SESSION['chats'] ) ) {
+    $_SESSION['chats'] = [];
+}
+
+if( ! isset( $_SESSION['chats'][$chat_id] ) ) {
+    $_SESSION['chats'] = array_merge( [
+        $chat_id => [
+            "messages" => [],
+            "title" => "Untitled",
+        ]
+    ], $_SESSION['chats'] );
+}
+
+$_SESSION['chats'][$chat_id]['messages'] = $messages;
 
 echo "event: stop\n";
 echo "data: stopped\n\n";

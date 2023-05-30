@@ -19,8 +19,72 @@ body, textarea {
     box-shadow: 2px 2px 5px #888888;
 }
 
-#chat-messages {
+#wrapper {
+    display: flex;
+    column-gap: 20px;
     height: calc( 100% - 132px );
+}
+
+#sidebar {
+    background: #333;
+    padding: 10px;
+    width: 170px;
+    border-radius: 10px;
+    margin-top: 10px;
+    overflow: auto;
+}
+
+#sidebar a {
+    padding: 5px;
+    display: block;
+    border-radius: 7px;
+    border: 1px solid #565656;
+    margin-bottom: 5px;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 0.7em;
+}
+
+#sidebar a:hover {
+    background: #444444;
+}
+
+#sidebar ul,
+#sidebar li {
+    list-style: none;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#sidebar li {
+    position: relative;
+}
+
+button.delete {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    border-radius: 5px;
+    background: #000;
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    font-family: 'Ubuntu';
+    padding: 2px 4px;
+    font-size: 0.7em;
+    cursor: pointer;
+    display: none;
+}
+
+#sidebar li:hover button.delete {
+    display: block;
+}
+
+#chat-messages {
+    height: 100%;
     overflow: auto;
     width: 100%;
     max-width: 1000px;

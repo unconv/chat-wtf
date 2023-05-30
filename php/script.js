@@ -1,5 +1,6 @@
 const message_input = document.querySelector( "#message-input" );
 const message_list = document.querySelector( "#chat-messages" );
+const new_chat_link = document.querySelector( "li.new-chat" );
 
 const markdown_converter = new showdown.Converter({
     requireSpaceBeforeHeadingText: true
@@ -14,6 +15,26 @@ message_input.addEventListener( "keydown", function( e ) {
     }
 } );
 
+function create_title( question, answer, title_box, chat_id ) {
+    const data = new FormData();
+    data.append('question', question);
+    data.append('answer', answer);
+    data.append('chat_id', chat_id);
+
+    fetch( base_uri + "create_title.php", {
+        method: 'POST',
+        body: data
+    })
+    .then(response => response.text())
+    .then(responseText => {
+        title_box.textContent = responseText;
+        title_box.setAttribute( "title", responseText );
+    })
+    .catch(error => {
+        console.log(error);
+    });
+}
+
 function send_message() {
     let question = message_input.value;
 
@@ -26,7 +47,7 @@ function send_message() {
     // send message and listen for tokens
     // @todo: send message as POST?
     const eventSource = new EventSource(
-        base_uri + "message.php?message=" + encodeURIComponent( question )
+        base_uri + "message.php?chat_id="+chat_id+"&message=" + encodeURIComponent( question )
     );
 
     // handle errors
@@ -55,6 +76,21 @@ function send_message() {
         // @todo: scroll while new tokens are added
         //        (only if user didn't scroll up)
         message_list.scrollTop = message_list.scrollHeight;
+
+        if( new_chat ) {
+            let title_box = document.createElement( "li" );
+            let title_link = document.createElement( "a" );
+            title_link.setAttribute( "href", base_uri + "index.php?chat_id=" + chat_id );
+            title_box.appendChild( title_link );
+            let delete_button = document.createElement( "button" );
+            delete_button.setAttribute( "data-id", chat_id );
+            delete_button.classList.add( "delete" );
+            delete_button.textContent = "X";
+            title_box.appendChild( delete_button );
+            new_chat_link.appendChild( title_box );
+
+            create_title( question, response, title_link, chat_id );
+        }
     } );
 
     message_input.focus();
@@ -156,9 +192,20 @@ document.addEventListener( "DOMContentLoaded", function() {
         update_message( message, message.textContent );
     } );
 
-    let clear_chat_button = document.querySelector( ".clear-chat" );
-    clear_chat_button.addEventListener( "click", function() {
-        fetch( base_uri + "clear_chat.php" );
-        message_list.innerHTML = '';
+    document.body.addEventListener( "click", function(e) {
+        if( e.target.matches( "button.delete" ) ) {
+            if( ! confirm( "Are you sure you want to delete this conversation?" ) ) {
+                return false;
+            }
+
+            const chat_id = e.target.getAttribute( "data-id" );
+            const data = new FormData();
+            data.append( "chat_id", chat_id );
+            fetch( base_uri + "delete_chat.php", {
+                method: 'POST',
+                body: data
+            } );
+            e.target.parentNode.remove();
+        }
     } );
 } );
