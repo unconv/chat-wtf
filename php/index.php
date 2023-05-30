@@ -54,7 +54,7 @@ if( $base_uri != "" ) {
             ?>
         </div>
     </div>
-    <textarea id="message-input"></textarea>
+    <textarea id="message-input" placeholder="Send a message..."></textarea>
     <script src="<?php echo $base_uri; ?>script.js"></script>
 </body>
 </html>
