@@ -97,6 +97,8 @@ function send_message() {
             let title_link = create_chat_link( chat_id );
 
             create_title( question, response, title_link, chat_id );
+
+            new_chat = false;
         }
     } );
 
