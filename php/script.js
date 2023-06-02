@@ -144,7 +144,12 @@ function add_message( direction, message ) {
     message_item.innerHTML = '<p>' + message + "</p>";
     message_list.appendChild( message_item );
     message_list.scrollTop = message_list.scrollHeight;
-    hljs.highlightAll();
+
+    // add code highlighting
+    message_item.querySelectorAll('pre code').forEach( (el) => {
+        hljs.highlightElement(el);
+    } );
+
     return message_item;
 }
 
@@ -162,7 +167,9 @@ function update_message( message, new_message ) {
     message.innerHTML = '<p>' + new_message + "</p>";
 
     // add code highlighting
-    hljs.highlightAll();
+    message.querySelectorAll('pre code').forEach( (el) => {
+        hljs.highlightElement(el);
+    } );
 }
 
 /**
