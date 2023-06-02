@@ -21,6 +21,9 @@ if( ! empty( $settings['system_message'] ) ) {
 }
 
 foreach( $context as $msg ) {
+    if( $msg["role"] === "system" ) {
+        continue;
+    }
     $messages[] = [
         "role" => $msg["role"],
         "content" => $msg["content"],
