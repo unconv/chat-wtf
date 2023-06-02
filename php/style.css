@@ -44,7 +44,6 @@ body, textarea {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    font-size: 0.7em;
 }
 
 #sidebar a:hover {
@@ -74,7 +73,7 @@ button.delete {
     font-weight: bold;
     font-family: 'Ubuntu';
     padding: 2px 4px;
-    font-size: 0.7em;
+    font-size: 0.95em;
     cursor: pointer;
     display: none;
 }
