@@ -3,7 +3,8 @@ const message_list = document.querySelector( "#chat-messages" );
 const new_chat_link = document.querySelector( "li.new-chat" );
 
 const markdown_converter = new showdown.Converter({
-    requireSpaceBeforeHeadingText: true
+    requireSpaceBeforeHeadingText: true,
+    tables: true
 });
 
 // detect Enter on message input to send message

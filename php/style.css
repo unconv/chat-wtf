@@ -83,6 +83,23 @@ button.delete {
     display: block;
 }
 
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th {
+    background-color: #ddd;
+    font-weight: bold;
+    color: #474747;
+}
+
+td, th {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+}
+
 #chat-messages {
     height: 100%;
     overflow: auto;
