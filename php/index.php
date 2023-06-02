@@ -48,6 +48,9 @@ if( $base_uri != "" ) {
             $chat_history = $_SESSION['chats'][$chat_id]['messages'] ?? [];
 
             foreach( $chat_history as $chat_message ) {
+                if( $chat_message["role"] === "system" ) {
+                    continue;
+                }
                 $direction = $chat_message['role'] === "user" ? "outgoing" : "incoming";
                 echo '<div class="chat-message '.$direction.'-message">'.htmlspecialchars( $chat_message['content'] ).'</div>';
             }
