@@ -14,8 +14,8 @@
 require_once( __DIR__ . "/exceptions.php" );
 
 function chatgpt_create_title(
-    string $answer,
     string $question,
+    string $answer,
     string $api_key,
     string $model = "gpt-3.5-turbo"
 ): string {
