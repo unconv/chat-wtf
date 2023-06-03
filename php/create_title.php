@@ -11,6 +11,8 @@
  * @return string Title from ChatGPT
  */
 
+require_once( __DIR__ . "/exceptions.php" );
+
 function chatgpt_create_title(
     string $answer,
     string $question,

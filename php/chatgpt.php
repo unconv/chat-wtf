@@ -9,8 +9,7 @@
  * @return string Response from ChatGPT
  */
 
-class CurlErrorException extends \Exception {};
-class OpenAIErrorException extends \Exception {};
+require_once( __DIR__ . "/exceptions.php" );
 
 function send_chatgpt_message(
     array $messages,
