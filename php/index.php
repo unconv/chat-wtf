@@ -30,12 +30,12 @@ if( $base_uri != "" ) {
     <div id="wrapper">
         <div id="sidebar">
             <ul>
-                <li class="new-chat"><a href="<?php echo $base_uri; ?>/">+ New chat</a></li>
+                <li class="new-chat"><a href="<?php echo $base_uri; ?>">+ New chat</a></li>
             <?php
             $chats = $_SESSION['chats'] ?? [];
 
             foreach( $chats as $id => $chat ) {
-                $link = $base_uri.'/index.php?chat_id='.htmlspecialchars( $id );
+                $link = $base_uri.'index.php?chat_id='.htmlspecialchars( $id );
                 $title = $chat['title'] ?? $id;
                 $delete_button = '<button class="delete" data-id="' . $id . '">X</button>';
                 echo '<li><a href="'.$link.'" title="' . htmlspecialchars( $title ) . '">'.htmlspecialchars( $title ).'</a>' . $delete_button . '</li>';
