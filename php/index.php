@@ -21,7 +21,7 @@ if( $base_uri != "" ) {
     <script src="https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js"></script>
     <script>
         let base_uri = '<?php echo $base_uri; ?>';
-        let chat_id = '<?php echo $chat_id; ?>';
+        let chat_id = '<?php echo htmlspecialchars( $chat_id ); ?>';
         let new_chat = <?php echo $new_chat ? "true" : "false"; ?>;
     </script>
 </head>
