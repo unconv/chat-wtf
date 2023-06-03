@@ -23,12 +23,15 @@ body, textarea {
     display: flex;
     column-gap: 20px;
     height: calc( 100% - 132px );
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 #sidebar {
     background: #333;
     padding: 10px;
     width: 24%;
+    max-width: 300px;
     border-radius: 10px;
     margin-top: 10px;
     overflow: auto;
