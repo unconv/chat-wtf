@@ -30,7 +30,7 @@ if( $base_uri != "" ) {
     <div id="wrapper">
         <div id="sidebar">
             <ul>
-                <li class="new-chat"><a href="<?php echo $base_uri; ?>">+ New chat</a></li>
+                <li class="new-chat"><a href="<?php echo $base_uri; ?>index.php">+ New chat</a></li>
             <?php
             $chats = $_SESSION['chats'] ?? [];
 
