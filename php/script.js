@@ -161,51 +161,29 @@ function add_message( direction, message ) {
  */
 function update_message( message, new_message ) {
     // convert message from Markdown to HTML
-    new_message = convert_markdown( new_message );
+    html_message = convert_markdown( new_message );
 
     // update message content
-    //message.innerHTML = '<p>' + new_message + "</p>";
-    message.innerHTML = '<div class="copy-container"><button class="copy-button"><svg xmlns="http://www.w3.org/2000/svg" class="chat-clipboard-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" height="10px"><path d="M19 4h-2a2 2 0 0 0 -2 -2h-4a2 2 0 0 0 -2 2h-2a2 2 0 0 0 -2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2 -2v-16a2 2 0 0 0 -2 -2z"></path><rect x="9" y="2" width="6" height="4"></rect></svg></button><p>' + new_message + "</p></div>";
-    
+    message.innerHTML  = '<p>' + html_message + '</p>';
 
     // add code highlighting
     message.querySelectorAll('pre code').forEach( (el) => {
         hljs.highlightElement(el);
     } );
-    
-    message.querySelectorAll('div.copy-container').forEach( (el) => {
 
-      el.addEventListener("click", function()
-      {
-        let new_message_nohtml = new_message.replace(/<[^>]*>?/gm, '').replace(/"/g, '').replace(/'/g, '');
-        new_message_nohtml = decodeHTML(new_message_nohtml);
-         copyToClipboard(el,new_message_nohtml);
-            
-        }); 
+    let icon = document.createElement( "i" );
+    icon.classList.add( "fa", "fa-clipboard" );
 
+    let copy_button = document.createElement( "button" );
+    copy_button.classList.add( "copy" );
+    copy_button.appendChild( icon );
+    copy_button.addEventListener( "click", function() {
+        navigator.clipboard.writeText( new_message );
+        icon.classList.remove( "fa-clipboard" );
+        icon.classList.add( "fa-check" );
     } );
-}
 
-function decodeHTML(html) {
-    var txt = document.createElement('textarea');
-    txt.innerHTML = html;
-    return txt.value;
-  }
-
-function copyToClipboard(el,text) {
-    const button = el.querySelector("button");
-    const textarea = document.createElement("textarea");
-    textarea.value = text;
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand("copy");
-    document.body.removeChild(textarea);
-    const svgElement = button.querySelector("svg");
-    const isTickSymbol = svgElement.innerHTML.includes('M3.73 11.72l6.37 6.37l14.29-14.3');
-
-    if (!isTickSymbol) {
-        svgElement.innerHTML = '<path d="M3.73 11.72l6.37 6.37l14.29-14.3"></path>';
-    }
+    message.appendChild( copy_button );
 }
 
 /**
