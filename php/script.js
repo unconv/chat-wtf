@@ -168,9 +168,20 @@ function update_message( message, new_message ) {
 
     // add code highlighting
     message.querySelectorAll('pre code').forEach( (el) => {
+        let code = el.textContent;
         hljs.highlightElement(el);
+
+        el.appendChild(
+            create_copy_button( code )
+        );
     } );
 
+    message.appendChild(
+        create_copy_button( new_message )
+    );
+}
+
+function create_copy_button( text_to_copy ) {
     let icon = document.createElement( "i" );
     icon.classList.add( "fa", "fa-clipboard" );
 
@@ -178,12 +189,12 @@ function update_message( message, new_message ) {
     copy_button.classList.add( "copy" );
     copy_button.appendChild( icon );
     copy_button.addEventListener( "click", function() {
-        navigator.clipboard.writeText( new_message );
+        navigator.clipboard.writeText( text_to_copy );
         icon.classList.remove( "fa-clipboard" );
         icon.classList.add( "fa-check" );
     } );
 
-    message.appendChild( copy_button );
+    return copy_button;
 }
 
 /**
