@@ -211,3 +211,22 @@ code {
 a {
     color: #fff;
 }
+/* Copy button */
+.clipboard-icon {
+    display: inline-block;
+    width: 14px;
+    height: 18px;
+    border: 2px solid;
+    position: relative;
+  }
+  .copy-button{
+    background-color: #3f3f3f;
+    border: none;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 0px !important;
+    float:right;
+  }
+  /* Copy button */
