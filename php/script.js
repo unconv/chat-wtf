@@ -161,15 +161,29 @@ function add_message( direction, message ) {
  */
 function update_message( message, new_message ) {
     // convert message from Markdown to HTML
-    new_message = convert_markdown( new_message );
+    html_message = convert_markdown( new_message );
 
     // update message content
-    message.innerHTML = '<p>' + new_message + "</p>";
+    message.innerHTML  = '<p>' + html_message + '</p>';
 
     // add code highlighting
     message.querySelectorAll('pre code').forEach( (el) => {
         hljs.highlightElement(el);
     } );
+
+    let icon = document.createElement( "i" );
+    icon.classList.add( "fa", "fa-clipboard" );
+
+    let copy_button = document.createElement( "button" );
+    copy_button.classList.add( "copy" );
+    copy_button.appendChild( icon );
+    copy_button.addEventListener( "click", function() {
+        navigator.clipboard.writeText( new_message );
+        icon.classList.remove( "fa-clipboard" );
+        icon.classList.add( "fa-check" );
+    } );
+
+    message.appendChild( copy_button );
 }
 
 /**
