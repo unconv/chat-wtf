@@ -8,7 +8,7 @@ $settings = require( __DIR__ . "/settings.php" );
 require( __DIR__ . "/chatgpt.php" );
 
 // get chat history from session
-$chat_id = $_GET['chat_id'];
+$chat_id = htmlspecialchars( $_REQUEST['chat_id'] );
 $context = $_SESSION['chats'][$chat_id]['messages'] ?? [];
 
 $messages = [];
@@ -30,10 +30,16 @@ foreach( $context as $msg ) {
     ];
 }
 
-$messages[] = [
-    "role" => "user",
-    "content" => $_GET['message'],
-];
+if( isset( $_POST['message'] ) ) {
+    $messages[] = [
+        "role" => "user",
+        "content" => $_POST['message'],
+    ];
+
+    $_SESSION['chats'][$chat_id]['messages'] = $messages;
+
+    die( $chat_id );
+}
 
 $error = null;
 
