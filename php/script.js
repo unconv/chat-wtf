@@ -47,11 +47,15 @@ function create_title( question, answer, title_link, chat_id ) {
     });
 }
 
+function scrolled_to_bottom() {
+    return ( message_list.scrollTop + message_list.offsetHeight ) == message_list.scrollHeight;
+}
+
 /**
  * Sends a message to ChatGPT and appends the
  * message and the response to the chat
  */
-function send_message() {
+async function send_message() {
     let question = message_input.value;
 
     // intialize message with blinking cursor
@@ -64,50 +68,55 @@ function send_message() {
     let data = new FormData();
     data.append( "chat_id", chat_id );
     data.append( "message", question );
-    fetch( base_uri + "message.php", {
+
+    // send message and get chat id
+    chat_id = await fetch( base_uri + "message.php", {
         method: "POST",
         body: data
-    } ).then( () => {
-        // listen for response tokens
-        const eventSource = new EventSource(
-            base_uri + "message.php?chat_id=" + chat_id
-        );
+    } ).then((response) => {
+        return response.text();
+    });
 
-        // handle errors
-        eventSource.addEventListener( "error", function() {
-            update_message( message, "Sorry, there was an error in the request. Check your error logs." );
-        } );
+    // listen for response tokens
+    const eventSource = new EventSource(
+        base_uri + "message.php?chat_id=" + chat_id
+    );
 
-        // intitialize ChatGPT response
-        let response = "";
+    // handle errors
+    eventSource.addEventListener( "error", function() {
+        update_message( message, "Sorry, there was an error in the request. Check your error logs." );
+    } );
 
-        // when a new token arrives
-        eventSource.addEventListener( "message", function( event ) {
-            let json = JSON.parse( event.data );
+    // intitialize ChatGPT response
+    let response = "";
 
-            // append token to response
-            response += json.content;
+    // when a new token arrives
+    eventSource.addEventListener( "message", function( event ) {
+        let json = JSON.parse( event.data );
 
-            // update message in UI
-            update_message( message, response );
-        } );
+        // append token to response
+        response += json.content;
 
-        eventSource.addEventListener( "stop", function( event ) {
-            eventSource.close();
+        let scrolled = scrolled_to_bottom();
 
-            // scroll to bottom of chat
-            // @todo: scroll while new tokens are added
-            //        (only if user didn't scroll up)
+        // update message in UI
+        update_message( message, response );
+
+        if( scrolled ) {
             message_list.scrollTop = message_list.scrollHeight;
+        }
+    } );
 
-            if( new_chat ) {
-                let title_link = create_chat_link( chat_id );
+    eventSource.addEventListener( "stop", function( event ) {
+        eventSource.close();
 
-                create_title( question, response, title_link, chat_id );
+        if( new_chat ) {
+            let title_link = create_chat_link( chat_id );
 
-                new_chat = false;
-            }
-        } );
+            create_title( question, response, title_link, chat_id );
+
+            new_chat = false;
+        }
     } );
 
     message_input.focus();

@@ -1,52 +1,53 @@
 <?php
-session_start();
-header( "Content-type: text/event-stream" );
 header( "Cache-Control: no-cache" );
 ob_end_flush();
 
 $settings = require( __DIR__ . "/settings.php" );
+
+require( __DIR__ . "/database.php" );
 require( __DIR__ . "/chatgpt.php" );
 
+$db = get_db();
+
 // get chat history from session
-$chat_id = htmlspecialchars( $_REQUEST['chat_id'] );
-$context = $_SESSION['chats'][$chat_id]['messages'] ?? [];
+$chat_id = intval( $_REQUEST['chat_id'] );
 
-$messages = [];
+if( ! chat_exists( $chat_id, $db ) ) {
+    $chat_id = create_conversation( "Untitled chat", $db );
+}
 
-if( ! empty( $settings['system_message'] ) ) {
-    $messages[] = [
+$context = get_messages( $chat_id, $db );
+
+if( empty( $context ) && ! empty( $settings['system_message'] ) ) {
+    $system_message = [
         "role" => "system",
         "content" => $settings['system_message'],
     ];
-}
 
-foreach( $context as $msg ) {
-    if( $msg["role"] === "system" ) {
-        continue;
-    }
-    $messages[] = [
-        "role" => $msg["role"],
-        "content" => $msg["content"],
-    ];
+    $context[] = $system_message;
+    add_message( $system_message, $chat_id, $db );
 }
 
 if( isset( $_POST['message'] ) ) {
-    $messages[] = [
+    $message = [
         "role" => "user",
         "content" => $_POST['message'],
     ];
 
-    $_SESSION['chats'][$chat_id]['messages'] = $messages;
+    add_message( $message, $chat_id, $db );
 
-    die( $chat_id );
+    echo $chat_id;
+    exit;
 }
+
+header( "Content-type: text/event-stream" );
 
 $error = null;
 
 // create a new completion
 try {
     $response_text = send_chatgpt_message(
-        $messages,
+        $context,
         $settings['api_key'],
         $settings['model'] ?? "",
     );
@@ -62,25 +63,12 @@ if( $error !== null ) {
     flush();
 }
 
-$messages[] = [
+$assistant_message = [
     "role" => "assistant",
     "content" => $response_text,
 ];
 
-if( ! isset( $_SESSION['chats'] ) ) {
-    $_SESSION['chats'] = [];
-}
-
-if( ! isset( $_SESSION['chats'][$chat_id] ) ) {
-    $_SESSION['chats'] = array_merge( [
-        $chat_id => [
-            "messages" => [],
-            "title" => "Untitled",
-        ]
-    ], $_SESSION['chats'] );
-}
-
-$_SESSION['chats'][$chat_id]['messages'] = $messages;
+add_message( $assistant_message, $chat_id, $db );
 
 echo "event: stop\n";
 echo "data: stopped\n\n";

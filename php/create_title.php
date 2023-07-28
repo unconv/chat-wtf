@@ -73,6 +73,10 @@ function chatgpt_create_title(
 session_start();
 
 $settings = require( __DIR__ . "/settings.php" );
+
+require( __DIR__ . "/database.php" );
+$db = get_db();
+
 $title = chatgpt_create_title(
     $_POST['question'],
     $_POST['answer'],
@@ -80,7 +84,7 @@ $title = chatgpt_create_title(
     $settings['model'] ?? "",
 );
 
-$chat_id = $_POST['chat_id'];
-$_SESSION['chats'][$chat_id]['title'] = $title;
+$chat_id = intval( $_POST['chat_id'] );
+set_conversation_title( $title, $chat_id, $db );
 
 echo $title;

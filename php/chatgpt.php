@@ -19,7 +19,14 @@ function send_chatgpt_message(
     $ch = curl_init( "https://api.openai.com/v1/chat/completions" );
 
     $response_text = "";
-    
+
+    $messages = array_map( function( $message ) {
+        return [
+            "role" => $message["role"],
+            "content" => $message["content"],
+        ];
+    }, $messages );
+
     curl_setopt_array( $ch, [
         CURLOPT_HTTPHEADER => [
             "Content-type: application/json",

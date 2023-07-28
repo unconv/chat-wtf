@@ -20,4 +20,12 @@ return [
 
     // base uri of app (e.g. /my/app/path)
     "base_uri" => "",
+
+    // database settings
+    "db" => [
+        "dsn" => "sqlite:../db/chatwtf.db",
+        //"dsn" => "mysql:host=localhost;dbname=chatwtf",
+        "username" => null,
+        "password" => null,
+    ]
 ];
