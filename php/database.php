@@ -18,7 +18,7 @@ function chat_exists( int $chat_id, PDO $db ): bool {
     $stmt->execute( [
         ":chat_id" => $chat_id,
     ] );
-    return !!$stmt->rowCount();
+    return !!$stmt->fetchColumn();
 }
 
 function get_chats( PDO $db ): array {
