@@ -6,17 +6,23 @@ $settings = require( __DIR__ . "/settings.php" );
 
 require( __DIR__ . "/database.php" );
 require( __DIR__ . "/chatgpt.php" );
+require( __DIR__ . "/autoload.php" );
 
 $db = get_db();
+$conversation_class = get_conversation_class( $db );
 
 // get chat history from session
 $chat_id = intval( $_REQUEST['chat_id'] );
 
-if( ! chat_exists( $chat_id, $db ) ) {
-    $chat_id = create_conversation( "Untitled chat", $db );
+$conversation = $conversation_class->find( $chat_id, $db );
+
+if( ! $conversation ) {
+    $conversation = new $conversation_class( $db );
+    $conversation->set_title( "Untitled chat" );
+    $conversation->save();
 }
 
-$context = get_messages( $chat_id, $db );
+$context = $conversation->get_messages();
 
 if( empty( $context ) && ! empty( $settings['system_message'] ) ) {
     $system_message = [
@@ -25,7 +31,7 @@ if( empty( $context ) && ! empty( $settings['system_message'] ) ) {
     ];
 
     $context[] = $system_message;
-    add_message( $system_message, $chat_id, $db );
+    $conversation->add_message( $system_message );
 }
 
 if( isset( $_POST['message'] ) ) {
@@ -34,9 +40,9 @@ if( isset( $_POST['message'] ) ) {
         "content" => $_POST['message'],
     ];
 
-    add_message( $message, $chat_id, $db );
+    $conversation->add_message( $message );
 
-    echo $chat_id;
+    echo $conversation->get_id();
     exit;
 }
 
@@ -68,7 +74,7 @@ $assistant_message = [
     "content" => $response_text,
 ];
 
-add_message( $assistant_message, $chat_id, $db );
+$conversation->add_message( $assistant_message );
 
 echo "event: stop\n";
 echo "data: stopped\n\n";

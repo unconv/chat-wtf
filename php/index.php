@@ -1,12 +1,16 @@
 <?php
 $settings = require( __DIR__ . "/settings.php" );
 require( __DIR__ . "/database.php" );
+require( __DIR__ . "/autoload.php" );
 
 $db = get_db();
+$conversation_class = get_conversation_class( $db );
 
-$chat_id = $_GET['chat_id'] ?? 0;
+$chat_id = intval( $_GET['chat_id'] ?? 0 );
 
-if( $chat_id && ! chat_exists( $chat_id, $db ) ) {
+$conversation = $conversation_class->find( $chat_id, $db );
+
+if( ! $conversation ) {
     $chat_id = 0;
 }
 
@@ -40,11 +44,11 @@ if( $base_uri != "" ) {
             <ul>
                 <li class="new-chat"><a href="<?php echo $base_uri; ?>index.php">+ New chat</a></li>
             <?php
-            $chats = get_chats( $db );
+            $chats = $conversation_class->get_chats( $db );
 
             foreach( $chats as $chat ) {
-                $id = $chat['id'];
-                $title = $chat['title'];
+                $id = $chat->get_id();
+                $title = $chat->get_title();
                 $link = $base_uri.'index.php?chat_id='.htmlspecialchars( $id );
                 $delete_button = '<button class="delete" data-id="' . $id . '">X</button>';
                 echo '<li><a href="'.$link.'" title="' . htmlspecialchars( $title ) . '">'.htmlspecialchars( $title ).'</a>' . $delete_button . '</li>';
@@ -54,7 +58,7 @@ if( $base_uri != "" ) {
         </div>
         <div id="chat-messages">
             <?php
-            $chat_history = $chat_id ? get_messages( $chat_id, $db ) : [];
+            $chat_history = $chat_id ? $conversation->get_messages( $chat_id, $db ) : [];
 
             foreach( $chat_history as $chat_message ) {
                 if( $chat_message["role"] === "system" ) {

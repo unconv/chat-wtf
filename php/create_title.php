@@ -75,7 +75,10 @@ session_start();
 $settings = require( __DIR__ . "/settings.php" );
 
 require( __DIR__ . "/database.php" );
+require( __DIR__ . "/autoload.php" );
+
 $db = get_db();
+$conversation_class = get_conversation_class( $db );
 
 $title = chatgpt_create_title(
     $_POST['question'],
@@ -85,6 +88,14 @@ $title = chatgpt_create_title(
 );
 
 $chat_id = intval( $_POST['chat_id'] );
-set_conversation_title( $title, $chat_id, $db );
 
-echo $title;
+$conversation = $conversation_class->find( $chat_id, $db );
+
+if( $conversation ) {
+    $conversation->set_title( $title );
+    $conversation->save();
+
+    echo $title;
+} else {
+    throw new \Exception( "Unable to create title" );
+}

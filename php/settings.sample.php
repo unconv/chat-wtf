@@ -21,7 +21,10 @@ return [
     // base uri of app (e.g. /my/app/path)
     "base_uri" => "",
 
-    // database settings
+    // storage type
+    "storage_type" => "session", // session or sql
+
+    // database settings (if using sql storage type)
     "db" => [
         "dsn" => "sqlite:../db/chatwtf.db",
         //"dsn" => "mysql:host=localhost;dbname=chatwtf",
