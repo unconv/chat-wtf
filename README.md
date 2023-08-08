@@ -6,18 +6,22 @@ Video of update to ChatGPT API: https://www.youtube.com/watch?v=0NrIv6bI5o4
 
 ## Quick Start
 
+1. Clone the repository
+2. Add your OpenAI API key to `settings.php` (see `settings.sample.php`)
+3. Start a server in the `php/` folder
+
 ```console
-$ sudo apt install php-sqlite3
-$ php db/install_sqlite.php
 $ cd php
 $ php -S localhost:8080
 ```
 
+4. Go to http://localhost:8080
+
 ## Database
 
-The chatbot uses a database to store the conversations. There is a SQLite dump and a MySQL dump in the `db` folder. You can install the SQLite version by running the `install_sqlite.php` script.
+The chatbot uses PHP sessions to store the conversations by default. You can also use an SQL database. There is a SQLite dump and a MySQL dump in the `db` folder. You can install the SQLite version by running the `install_sqlite.php` script.
 
-Database config has to be put into `settings.php` (see `settings.sample.php`)
+Database config has to be put into `settings.php` (see `settings.sample.php`). You need to also change `storage_type` to `sql` in the settings in order to use a database.
 
 ## API key
 
