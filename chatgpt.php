@@ -37,6 +37,8 @@ function send_chatgpt_message(
             "model" => $model,
             "messages" => $messages,
             "stream" => true,
+            "temperature" => 0.9,
+            "frequency_penalty" => 0.5,
         ] ),
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_WRITEFUNCTION => function( $ch, $data ) use ( &$response_text ) {
@@ -70,7 +72,9 @@ function send_chatgpt_message(
                 } elseif( trim( $delta ) == "data: [DONE]" ) {
                     $content = "";
                 } else {
-                    error_log( "Invalid ChatGPT response: " . $delta );
+                    error_log( "Invalid ChatGPT response: '" . $delta . "'" );
+
+                    file_put_contents("data.txt", $data);
                 }
         
                 $response_text .= $content;

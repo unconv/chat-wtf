@@ -1,6 +1,10 @@
 <?php
-function get_db(): PDO {
+function get_db(): PDO|null {
     $settings = require( __DIR__ . "/settings.php" );
+
+    if( $settings['storage_type'] === "session" ) {
+        return null;
+    }
 
     $db = new PDO(
         $settings["db"]["dsn"],

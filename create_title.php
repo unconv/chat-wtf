@@ -83,8 +83,7 @@ $conversation_class = get_conversation_class( $db );
 $title = chatgpt_create_title(
     $_POST['question'],
     $_POST['answer'],
-    $settings['api_key'],
-    $settings['model'] ?? "",
+    $settings['api_key']
 );
 
 $chat_id = intval( $_POST['chat_id'] );

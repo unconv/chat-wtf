@@ -4,7 +4,8 @@ const new_chat_link = document.querySelector( "li.new-chat" );
 
 const markdown_converter = new showdown.Converter({
     requireSpaceBeforeHeadingText: true,
-    tables: true
+    tables: true,
+    underline: false,
 });
 
 // detect Enter on message input to send message
