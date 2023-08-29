@@ -27,18 +27,6 @@ body, textarea {
     margin: 0 auto;
 }
 
-button.copy {
-    border-radius: 5px;
-    background: #fff;
-    padding: 0;
-    width: 20px;
-    height: 20px;
-    border: 0;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-}
-
 #sidebar {
     background: #333;
     padding: 10px;
@@ -95,23 +83,6 @@ button.delete {
 
 #sidebar li:hover button.delete {
     display: block;
-}
-
-table {
-    border-collapse: collapse;
-    width: 100%;
-}
-
-th {
-    background-color: #ddd;
-    font-weight: bold;
-    color: #474747;
-}
-
-td, th {
-    border: 1px solid #ccc;
-    padding: 8px;
-    text-align: left;
 }
 
 #chat-messages {

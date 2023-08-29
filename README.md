@@ -1,17 +1,14 @@
-# ChatWTF Chatbot
+# ChatWTF
 
-This ChatGPT-like chatbot was made using the OpenAI API for a YouTube video I made. You can watch the original video here: https://www.youtube.com/watch?v=ru5m-BKDn6E
-
-Video of update to ChatGPT API: https://www.youtube.com/watch?v=0NrIv6bI5o4
+This is a ChatGPT-like chatbot that uses the ChatGPT API. It was created for my YouTube channel. You can find the playlist of videos [here](https://www.youtube.com/watch?v=ru5m-BKDn6E&list=PLz8w2NTEwxvqH7yCAp6PAL0dKeiVU7uv4).
 
 ## Quick Start
 
 1. Clone the repository
 2. Add your OpenAI API key to `settings.php` (see `settings.sample.php`)
-3. Start a server in the `php/` folder
+3. Start a server
 
 ```console
-$ cd php
 $ php -S localhost:8080
 ```
 
@@ -29,15 +26,7 @@ You will need an API key from OpenAI to use the code. The API key must be added 
 
 ## Modify to your liking
 
-You can change the system message in the PHP version and the default prompt and default questions and answers in the Python version to make the chatbot do what you want. For example you can add a product / website documentation as the default prompt / system message and it will be able to answer questions based on the documentation.
-
-Note that a long documentation or a long question will use up more tokens and therefore cost more. There is also a limit for the amount of tokens you can use in one request.
-
-## Python version
-
-There is a simple Python version of the chatbot in `python/chat.py`. You can run it from the command line and it will ask for a question and then give you an answer. You can exit by typing `exit` as the question (or with `Ctrl+C`)
-
-The Python version uses the `text-davinci-003` engine. It was made in the first version of the repo, and since abandoned (at least for now)
+You can change the system message in the settings to make the chatbot do what you want.
 
 ## Support
 
