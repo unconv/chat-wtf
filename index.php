@@ -73,7 +73,7 @@ if( $base_uri != "" ) {
                 username
                 <i class="fa fa-ellipsis dots"></i>
             </button>
-            <ul>
+            <ul onclick="alert('Menu is dummy');">
                 <li><button>My plan</button></li>
                 <li><button>Custom instructions</button></li>
                 <li><button>Settings &amp; Beta</button></li>
@@ -118,7 +118,7 @@ if( $base_uri != "" ) {
             ?>
         </div>
         <div class="view new-chat-view <?php echo $chat_id ? "" : "show"; ?>">
-            <div class="model-selector">
+            <div class="model-selector" onclick="alert('Model selector not implemented yet :(');">
                 <button class="gpt-3 selected">
                     <i class="fa fa-bolt"></i> GPT-3.5
                     <div class="model-info">
