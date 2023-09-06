@@ -299,7 +299,7 @@ i.user-icon {
 }
 
 :hover::-webkit-scrollbar-thumb {
-    background-color: var(--color-text)c3;
+    background-color: var(--color-text);
     border-radius: 5px;
 }
 
