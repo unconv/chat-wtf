@@ -58,6 +58,8 @@ function scrolled_to_bottom() {
  * message and the response to the chat
  */
 async function send_message() {
+    show_view( ".conversation-view" );
+
     let question = message_input.value;
 
     // intialize message with blinking cursor
