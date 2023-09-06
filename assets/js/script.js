@@ -210,6 +210,11 @@ function update_message( message, new_message ) {
     // update message content
     content.innerHTML  = html_message;
 
+    // delete old copy buttons
+    message.querySelectorAll("button.copy").forEach(btn => {
+        btn.remove();
+    });
+
     // add code highlighting
     content.querySelectorAll('pre code').forEach( (el) => {
         let code = el.textContent;
