@@ -543,7 +543,7 @@ td, th {
 
 
 pre code.hljs {
-    max-width: 500px;
+    white-space: pre-wrap;
     border-radius: 10px;
     font-size: 1.1em;
     margin: 5px;
