@@ -435,6 +435,7 @@ p.secondary {
 
 .message .content {
     padding-top: 5px;
+    width: 100%;
 }
 
 .user.message {
@@ -541,6 +542,9 @@ td, th {
     text-align: left;
 }
 
+pre {
+    width: 100%;
+}
 
 pre code.hljs {
     white-space: pre-wrap;
