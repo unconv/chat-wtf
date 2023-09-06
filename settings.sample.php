@@ -26,7 +26,7 @@ return [
 
     // database settings (if using sql storage type)
     "db" => [
-        "dsn" => "sqlite:../db/chatwtf.db",
+        "dsn" => "sqlite:db/chatwtf.db",
         //"dsn" => "mysql:host=localhost;dbname=chatwtf",
         "username" => null,
         "password" => null,
