@@ -42,29 +42,31 @@ if( $base_uri != "" ) {
 </head>
 <body>
     <nav id="sidebar">
-        <div class="sidebar-controls">
-            <button class="new-chat"><i class="fa fa-plus"></i> New chat</button>
-            <button class="hide-sidebar"><i class="fa fa-chevron-left"></i></button>
-        </div>
-        <ul class="conversations">
-            <?php
-            $chats = $conversation_class->get_chats( $db );
-
-            foreach( $chats as $chat ) {
-                $id = $chat->get_id();
-                ?>
-                <li class="">
-                    <button class="conversation-button" data-id="<?php echo htmlspecialchars( $id ); ?>"><i class="fa fa-message fa-regular"></i> <span class="title-text"><?php echo htmlspecialchars( $chat->get_title() ); ?></span></button>
-                    <div class="fade"></div>
-                    <div class="edit-buttons">
-                        <button><i class="fa fa-edit"></i></button>
-                        <button class="delete" data-id="<?php echo htmlspecialchars( $id ); ?>"><i class="fa fa-trash"></i></button>
-                    </div>
-                </li>
+        <div class="float-top">
+            <div class="sidebar-controls">
+                <button class="new-chat"><i class="fa fa-plus"></i> New chat</button>
+                <button class="hide-sidebar"><i class="fa fa-chevron-left"></i></button>
+            </div>
+            <ul class="conversations">
                 <?php
-            }
-            ?>
-        </ul>
+                $chats = $conversation_class->get_chats( $db );
+
+                foreach( $chats as $chat ) {
+                    $id = $chat->get_id();
+                    ?>
+                    <li class="">
+                        <button class="conversation-button" data-id="<?php echo htmlspecialchars( $id ); ?>"><i class="fa fa-message fa-regular"></i> <span class="title-text"><?php echo htmlspecialchars( $chat->get_title() ); ?></span></button>
+                        <div class="fade"></div>
+                        <div class="edit-buttons">
+                            <button><i class="fa fa-edit"></i></button>
+                            <button class="delete" data-id="<?php echo htmlspecialchars( $id ); ?>"><i class="fa fa-trash"></i></button>
+                        </div>
+                    </li>
+                    <?php
+                }
+                ?>
+            </ul>
+        </div>
         <div class="user-menu">
             <button>
                 <i class="user-icon">u</i>
