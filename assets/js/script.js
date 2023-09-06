@@ -325,6 +325,9 @@ document.addEventListener( "DOMContentLoaded", function() {
             delete_button_action( button );
         }
     } );
+
+    // scroll down the message list
+    message_list.scrollTop = message_list.scrollHeight;
 } );
 
 /**
