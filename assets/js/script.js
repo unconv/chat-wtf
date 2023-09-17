@@ -53,6 +53,37 @@ function scrolled_to_bottom() {
     return ( Math.ceil( message_list.scrollTop ) + message_list.offsetHeight ) >= message_list.scrollHeight;
 }
 
+class AudioQueue {
+    queue = [];
+    handling = false;
+
+    async add( text ) {
+        const audio = await create_text_to_speech( text );
+        this.queue.push( audio );
+        if( this.queue.length === 1 ) {
+            await this.handle();
+        }
+    }
+
+    async handle() {
+        if( this.handling ) {
+            return false;
+        }
+
+        this.handling = true;
+
+        const audio = this.queue.shift();
+        await play_audio( audio );
+
+        if( this.queue.length > 0 ) {
+            this.handling = false;
+            await this.handle();
+        }
+
+        this.handling = false;
+    }
+}
+
 /**
  * Sends a message to ChatGPT and appends the
  * message and the response to the chat
@@ -94,12 +125,25 @@ async function send_message() {
     // intitialize ChatGPT response
     let response = "";
 
+    // initialize audio handling
+    const audio_queue = new AudioQueue();
+    let paragraph = "";
+
     // when a new token arrives
     eventSource.addEventListener( "message", function( event ) {
         let json = JSON.parse( event.data );
 
         // append token to response
         response += json.content;
+        paragraph += json.content;
+
+        if( paragraph.indexOf( "\n\n" ) !== -1 ) {
+            if( speech_enabled && paragraph.trim() !== "" ) {
+                audio_queue.add( paragraph );
+            }
+
+            paragraph = "";
+        }
 
         let scrolled = scrolled_to_bottom();
 
@@ -111,7 +155,7 @@ async function send_message() {
         }
     } );
 
-    eventSource.addEventListener( "stop", function( event ) {
+    eventSource.addEventListener( "stop", async function( event ) {
         eventSource.close();
 
         if( new_chat ) {
@@ -121,9 +165,49 @@ async function send_message() {
 
             new_chat = false;
         }
+
+        if( speech_enabled && paragraph.trim() !== "" ) {
+            audio_queue.add( paragraph );
+            paragraph = "";
+        }
     } );
 
     message_input.focus();
+}
+
+async function create_text_to_speech( text ) {
+    return new Promise( (resolve, _) => {
+        const data = new FormData();
+        data.append( "text", text );
+
+        fetch( base_uri + "text_to_audio.php", {
+            method: 'POST',
+            body: data
+        } ).then( response => {
+            return response.json();
+        } ).then( data => {
+            if( data.status !== "OK" ) {
+                console.log( new Error( "Unable to create audio" ) );
+                return;
+            }
+
+            var audio = new Audio();
+            audio.src = base_uri + "speech/output/" + data.response;
+
+            audio.addEventListener( 'canplaythrough', () => {
+                 resolve( audio );
+            } );
+        } );
+     } );
+}
+
+async function play_audio( audio ) {
+   return new Promise( (resolve, _) => {
+        audio.addEventListener( 'ended', () => {
+            resolve();
+        } );
+        audio.play();
+    } );
 }
 
 /**

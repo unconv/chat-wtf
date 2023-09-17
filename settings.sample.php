@@ -30,5 +30,9 @@ return [
         //"dsn" => "mysql:host=localhost;dbname=chatwtf",
         "username" => null,
         "password" => null,
-    ]
+    ],
+
+    // ElevenLabs settings
+    "elevenlabs_api_key" => "",
+    "speech_enabled" => false,
 ];

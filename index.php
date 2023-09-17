@@ -21,6 +21,9 @@ $base_uri = $settings['base_uri'] ?? "";
 if( $base_uri != "" ) {
     $base_uri = rtrim( $base_uri, "/" ) . "/";
 }
+
+$speech_enabled = isset( $settings['speech_enabled'] ) && $settings['speech_enabled'];
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -38,6 +41,7 @@ if( $base_uri != "" ) {
         let base_uri = '<?php echo $base_uri; ?>';
         let chat_id = <?php echo intval( $chat_id ); ?>;
         let new_chat = <?php echo $new_chat ? "true" : "false"; ?>;
+        let speech_enabled = <?php echo $speech_enabled ? "true" : "false"; ?>;
     </script>
 </head>
 <body>
