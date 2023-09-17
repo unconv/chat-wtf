@@ -52,6 +52,7 @@ body {
     justify-content: space-between;
     flex-direction: column;
     transition: all 0.2s ease-in-out;
+    height: 100%;
 }
 
 .float-top {
@@ -66,7 +67,7 @@ body {
 }
 
 #sidebar.hidden .hide-sidebar {
-    left: 60px;
+    left: 53px;
     transform: rotate(180deg);
     padding: 15px 13px 11px 13px;
 }
@@ -103,6 +104,7 @@ button:hover {
     top: 0;
     transition: all 0.2s ease-in-out;
     transform: rotate(0deg);
+    background: var(--color-black);
 }
 
 .new-chat i {
@@ -431,6 +433,7 @@ p.secondary {
     padding: 25px 60px 15px 60px;
     border-bottom: 1px solid var(--color-border2);
     font-size: 0.95em;
+    position: relative;
 }
 
 .message .content {
@@ -571,5 +574,97 @@ pre code.hljs {
     }
     100% {
         opacity: 0;
+    }
+}
+
+@media (max-width: 700px) {
+    main {
+        z-index: 1;
+    }
+
+    #sidebar {
+        position: fixed;
+        top: 0;
+        left: -260px;
+        margin-right: -260px;
+        z-index: 2;
+    }
+
+    #sidebar.hidden {
+        left: 0;
+        margin-right: 0;
+    }
+
+    .hide-sidebar {
+        left: 53px;
+        transform: rotate(180deg);
+        padding: 15px 13px 11px 13px;
+    }
+
+    #sidebar.hidden .hide-sidebar {
+        left: 0;
+        transition: all 0.2s ease-in-out;
+        transform: rotate(0deg);
+    }
+
+    .message {
+        padding-left: 20px;
+        padding-right: 20px;
+        gap: 15px;
+    }
+
+    #message {
+        font-size: 0.9em;
+    }
+
+    .disclaimer {
+        font-size: 0.5em;
+    }
+}
+
+@media (max-width: 335px) {
+    main {
+        padding: 0 0 20px 0;
+    }
+
+    body {
+        font-size: 0.8em;
+    }
+
+    #message-form {
+        padding: 0px 20px 0 20px;
+    }
+
+    #message {
+        padding: 13px 85px 13px 12px;
+    }
+
+    .message {
+        padding: 15px 20px 7px 20px;
+        gap: 8px;
+    }
+
+    .send-button {
+        font-size: 0.8em;
+        padding: 7px 8px 7px 7px;
+        right: 11px;
+    }
+
+    .disclaimer {
+        font-size: 0.6em;
+        margin-top: 6px;
+    }
+}
+
+@media (max-width: 260px) {
+    .message {
+        flex-direction: column;
+    }
+
+    .message i.user-icon {
+        padding: 4px;
+        width: 15px;
+        height: 15px;
+        font-size: 12px;
     }
 }
