@@ -14,6 +14,15 @@ $ php -S localhost:8080
 
 4. Go to http://localhost:8080
 
+## Docker
+
+```console
+$ sudo docker build -t chatwtf .
+$ sudo docker run -p 8080:80 chatwtf
+```
+
+Note: If you get `caught SIGWINCH, shutting down gracefully`, add the `-d` flag to run it in the background.
+
 ## Database
 
 The chatbot uses PHP sessions to store the conversations by default. You can also use an SQL database. There is a SQLite dump and a MySQL dump in the `db` folder. You can install the SQLite version by running the `install_sqlite.php` script.
