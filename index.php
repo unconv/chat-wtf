@@ -153,7 +153,7 @@ $speech_enabled = isset( $settings['speech_enabled'] ) && $settings['speech_enab
         <div id="message-form">
             <div class="message-wrapper">
                 <textarea id="message" rows="1" placeholder="Send a message"></textarea>
-                <button class="send-button"><i class="fa fa-paper-plane"></i></button>
+                <button id="send-button"><i class="fa fa-paper-plane"></i></button>
             </div>
             <div class="disclaimer">ChatWTF uses the OpenAI ChatGPT API but is not affiliated with OpenAI</div>
         </div>

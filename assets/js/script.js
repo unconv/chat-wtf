@@ -1,4 +1,5 @@
 const message_input = document.querySelector( "#message" );
+const send_button = document.querySelector( "#send-button" );
 const message_list = document.querySelector( "#chat-messages" );
 const new_chat_link = document.querySelector( "li.new-chat" );
 const conversations_list = document.querySelector( "ul.conversations" );
@@ -13,11 +14,25 @@ const markdown_converter = new showdown.Converter({
 message_input.addEventListener( "keydown", function( e ) {
     if( e.keyCode == 13 && !e.shiftKey ) {
         e.preventDefault();
-        add_message( "user", escapeHtml( message_input.value ) );
-        send_message();
+        submit_message();
         return false;
     }
 } );
+
+// detect Enter on message input to send message
+send_button.addEventListener( "click", function( e ) {
+    e.preventDefault();
+    submit_message();
+    return false;
+} );
+
+/**
+ * Submits the currently typed in message to ChatWTF
+ */
+function submit_message() {
+    add_message( "user", escapeHtml( message_input.value ) );
+    send_message();
+}
 
 /**
  * Creates a title for a conversation

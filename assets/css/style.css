@@ -489,7 +489,7 @@ p.secondary {
     font-size: 0.7em;
 }
 
-.send-button {
+#send-button {
     position: absolute;
     right: 15px;
     top: 50%;
@@ -504,7 +504,7 @@ p.secondary {
     margin-top: -2px;
 }
 
-button.send-button:hover {
+button#send-button:hover {
     border: none;
     background: var(--color-gpt3);
     color: var(--color-white);
@@ -644,7 +644,7 @@ pre code.hljs {
         gap: 8px;
     }
 
-    .send-button {
+    #send-button {
         font-size: 0.8em;
         padding: 7px 8px 7px 7px;
         right: 11px;
