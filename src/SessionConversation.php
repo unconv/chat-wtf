@@ -24,6 +24,7 @@ class SessionConversation implements ConversationInterface
     public function get_chats(): array {
         self::init_session();
         $chats = $_SESSION['chats'] ?? [];
+        $chats = array_reverse( $chats );
 
         $list = [];
 
