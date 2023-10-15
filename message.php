@@ -1,6 +1,6 @@
 <?php
 header( "Cache-Control: no-cache" );
-if( ob_get_contents() ) ob_end_flush();
+@ob_end_flush();
 
 $settings = require( __DIR__ . "/settings.php" );
 
