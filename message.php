@@ -5,7 +5,6 @@ if( ob_get_contents() ) ob_end_flush();
 $settings = require( __DIR__ . "/settings.php" );
 
 require( __DIR__ . "/database.php" );
-require( __DIR__ . "/chatgpt.php" );
 require( __DIR__ . "/autoload.php" );
 
 $db = get_db();
@@ -52,14 +51,28 @@ $error = null;
 
 // create a new completion
 try {
-    $response_text = send_chatgpt_message(
-        $context,
-        $settings['api_key'],
-        $settings['model'] ?? "",
-    );
-} catch( CurlErrorException $e ) {
-    $error = "Sorry, there was an error in the connection. Check the error logs.";
-} catch( OpenAIErrorException $e ) {
+    $chatgpt = new ChatGPT( $settings['api_key'] );
+
+    if( isset( $settings['model'] ) ) {
+        $chatgpt->set_model( $settings['model'] );
+    }
+
+    foreach( $context as $message ) {
+        switch( $message['role'] ) {
+            case "user":
+                $chatgpt->umessage( $message['content'] );
+                break;
+            case "assistant":
+                $chatgpt->amessage( $message['content'] );
+                break;
+            case "system":
+                $chatgpt->smessage( $message['content'] );
+                break;
+        }
+    }
+    $chatgpt->stream( true );
+    $response_text = $chatgpt->response()->content;
+} catch ( Exception $e ) {
     $error = "Sorry, there was an unknown error in the OpenAI request";
 }
 

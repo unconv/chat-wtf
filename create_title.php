@@ -11,63 +11,18 @@
  * @return string Title from ChatGPT
  */
 
-require_once( __DIR__ . "/exceptions.php" );
-
 function chatgpt_create_title(
     string $question,
     string $answer,
     string $api_key,
     string $model = "gpt-3.5-turbo"
 ): string {
-    $ch = curl_init( "https://api.openai.com/v1/chat/completions" );
+    $chatgpt = new ChatGPT( $api_key );
+    $chatgpt->set_model( $model );
+    $chatgpt->smessage( "Create a short title to be used in a conversation list in a chatbot. It should describe what the conversation is about (not a 'book title')" );
+    $chatgpt->umessage( "Create a concise title for the following chat conversation:\nQ: " . $question . "\nA: " . $answer );
 
-    curl_setopt_array( $ch, [
-        CURLOPT_HTTPHEADER => [
-            "Content-type: application/json",
-            "Authorization: Bearer $api_key"
-        ],
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => json_encode( [
-            "model" => $model,
-            "messages" => [
-                [
-                    "role" => "system",
-                    "content" => "You are a title generator. Respond only with the title."
-                ],
-                [
-                    "role" => "user",
-                    "content" => "Create a concise title for the following chat conversation:\nQ: " . $question . "\nA: " . $answer
-                ]
-            ],
-        ] ),
-        CURLOPT_RETURNTRANSFER => true,
-    ] );
-    
-    $response = curl_exec( $ch );
-
-    if( ! $response ) {
-        throw new CurlErrorException( sprintf(
-            "Error in OpenAI request: %s",
-            curl_errno( $ch ) . ": " . curl_error( $ch )
-        ) );
-    }
-
-    $json = json_decode( $response );
-
-    if( ! $json ) {
-        throw new OpenAIErrorException( sprintf(
-            "JSON error in OpenAI API request"
-        ) );
-    }
-
-    if( ! isset( $json->choices[0]->message->content ) ) {
-        throw new OpenAIErrorException( sprintf(
-            "Error in OpenAI API request: %s",
-            print_r( $json, true ),
-        ) );
-    }
-
-    return trim( $json->choices[0]->message->content, '"' );
+    return trim( $chatgpt->response()->content, '"' );
 }
 
 session_start();
