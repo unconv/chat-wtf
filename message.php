@@ -70,8 +70,7 @@ try {
                 break;
         }
     }
-    $chatgpt->stream( true );
-    $response_text = $chatgpt->response()->content;
+    $response_text = $chatgpt->stream( StreamType::Event )->content;
 } catch ( Exception $e ) {
     $error = "Sorry, there was an unknown error in the OpenAI request";
 }

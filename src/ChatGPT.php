@@ -3,13 +3,18 @@
  * From: https://github.com/unconv/php-gpt-funcs/blob/master/library/ChatGPT.php
  */
 
+enum StreamType: int {
+    case Event = 0; // for JavaScript EventSource
+    case Plain = 1; // for terminal application
+    case Raw   = 2; // for raw data from ChatGPT API
+}
+
 class ChatGPT {
     protected array $messages = [];
     protected array $functions = [];
     protected $savefunction = null;
     protected $loadfunction = null;
     protected bool $loaded = false;
-    protected bool $stream = false;
     protected $function_call = "auto";
     protected string $model = "gpt-3.5-turbo";
 
@@ -27,10 +32,6 @@ class ChatGPT {
             $this->messages = ($this->loadfunction)( $this->chat_id );
             $this->loaded = true;
         }
-    }
-
-    public function stream( bool $enabled ) {
-        $this->stream = $enabled;
     }
 
     public function set_model( string $model ) {
@@ -136,7 +137,10 @@ class ChatGPT {
         }
     }
 
-    public function response( bool $raw_function_response = false ) {
+    public function response(
+        bool $raw_function_response = false,
+        ?StreamType $stream_type = null,
+    ) {
         $fields = [
             "model" => $this->model,
             "messages" => $this->messages,
@@ -159,52 +163,17 @@ class ChatGPT {
         curl_setopt( $ch, CURLOPT_POST, true );
         curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
 
-        if( $this->stream ) {
+        if( $stream_type ) {
             $fields["stream"] = true;
 
             $response_text = "";
 
-            curl_setopt( $ch, CURLOPT_WRITEFUNCTION, function( $ch, $data ) use ( &$response_text ) {
-                $json = json_decode( $data );
+            curl_setopt( $ch, CURLOPT_WRITEFUNCTION, function( $ch, $data ) use ( &$response_text, $stream_type ) {
+                $response_text .= $this->parse_stream_data( $ch, $data, $stream_type );
 
-                if( isset( $json->error ) ) {
-                    $error  = $json->error->message;
-                    $error .= " (" . $json->error->code . ")";
-                    $error  = "`" . trim( $error ) . "`";
-
-                    echo "data: " . json_encode( ["content" => $error] ) . "\n\n";
-
-                    echo "event: stop\n";
-                    echo "data: stopped\n\n";
-
-                    flush();
-                    die();
+                if( connection_aborted() ) {
+                    return 0;
                 }
-
-                $deltas = explode( "\n", $data );
-
-                foreach( $deltas as $delta ) {
-                    if( strpos( $delta, "data: " ) !== 0 ) {
-                        continue;
-                    }
-
-                    $json = json_decode( substr( $delta, 6 ) );
-
-                    if( isset( $json->choices[0]->delta ) ) {
-                        $content = $json->choices[0]->delta->content ?? "";
-                    } elseif( trim( $delta ) == "data: [DONE]" ) {
-                        $content = "";
-                    } else {
-                        error_log( "Invalid ChatGPT response: '" . $delta . "'" );
-                    }
-
-                    $response_text .= $content;
-
-                    echo "data: " . json_encode( ["content" => $content] ) . "\n\n";
-                    flush();
-                }
-
-                if( connection_aborted() ) return 0;
 
                 return strlen( $data );
             } );
@@ -217,7 +186,12 @@ class ChatGPT {
         $curl_exec = curl_exec( $ch );
 
         // get ChatGPT reponse
-        if( $this->stream ) {
+        if( $stream_type ) {
+            if( $stream_type === StreamType::Event ) {
+                echo "event: stop\n";
+                echo "data: stopped\n\n";
+            }
+
             $message = new stdClass;
             $message->role = "assistant";
             $message->content = $response_text;
@@ -249,6 +223,69 @@ class ChatGPT {
         $message = $this->handle_functions( $message, $raw_function_response );
 
         return $message;
+    }
+
+    public function stream( StreamType $stream_type ) {
+        while( ob_get_level() ) ob_end_flush();
+        return $this->response( stream_type: $stream_type );
+    }
+
+    protected function parse_stream_data( CurlHandle $ch, string $data, StreamType $stream_type ): string {
+        $json = json_decode( $data );
+
+        if( isset( $json->error ) ) {
+            $error  = $json->error->message;
+            $error .= " (" . $json->error->code . ")";
+            $error  = "`" . trim( $error ) . "`";
+
+            if( $stream_type == StreamType::Event ) {
+                echo "data: " . json_encode( ["content" => $error] ) . "\n\n";
+
+                echo "event: stop\n";
+                echo "data: stopped\n\n";
+            } elseif( $stream_type == StreamType::Plain ) {
+                echo $error;
+            } else {
+                echo $data;
+            }
+
+            flush();
+            die();
+        }
+
+        $response_text = "";
+
+        $deltas = explode( "\n", $data );
+
+        foreach( $deltas as $delta ) {
+            if( strpos( $delta, "data: " ) !== 0 ) {
+                continue;
+            }
+
+            $json = json_decode( substr( $delta, 6 ) );
+
+            if( isset( $json->choices[0]->delta ) ) {
+                $content = $json->choices[0]->delta->content ?? "";
+            } elseif( trim( $delta ) == "data: [DONE]" ) {
+                $content = "";
+            } else {
+                error_log( "Invalid ChatGPT response: '" . $delta . "'" );
+            }
+
+            $response_text .= $content;
+
+            if( $stream_type == StreamType::Event ) {
+                echo "data: " . json_encode( ["content" => $content] ) . "\n\n";
+            } elseif( $stream_type == StreamType::Plain ) {
+                echo $content;
+            } else {
+                echo $data;
+            }
+
+            flush();
+        }
+
+        return $response_text;
     }
 
     protected function handle_functions( stdClass $message, bool $raw_function_response = false ) {
