@@ -32,6 +32,11 @@ return [
         "password" => null,
     ],
 
+    // CodeInterpreter settings
+    "code_interpreter" => [
+        "enabled" => false,
+    ],
+
     // ElevenLabs settings
     "elevenlabs_api_key" => "",
     "speech_enabled" => false,

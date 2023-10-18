@@ -3,6 +3,7 @@ const send_button = document.querySelector( "#send-button" );
 const message_list = document.querySelector( "#chat-messages" );
 const new_chat_link = document.querySelector( "li.new-chat" );
 const conversations_list = document.querySelector( "ul.conversations" );
+const selected_mode = document.querySelector( "#assistant-mode" );
 
 const markdown_converter = new showdown.Converter({
     requireSpaceBeforeHeadingText: true,
@@ -19,7 +20,7 @@ message_input.addEventListener( "keydown", function( e ) {
     }
 } );
 
-// detect Enter on message input to send message
+// detect click on send button to send message
 send_button.addEventListener( "click", function( e ) {
     e.preventDefault();
     submit_message();
@@ -30,6 +31,7 @@ send_button.addEventListener( "click", function( e ) {
  * Submits the currently typed in message to ChatWTF
  */
 function submit_message() {
+    message_box.style.height = "auto";
     add_message( "user", escapeHtml( message_input.value ) );
     send_message();
 }
@@ -117,6 +119,8 @@ async function send_message() {
     // send message
     let data = new FormData();
     data.append( "chat_id", chat_id );
+    data.append( "model", chatgpt_model );
+    data.append( "mode", selected_mode.value );
     data.append( "message", question );
 
     // send message and get chat id
@@ -129,7 +133,7 @@ async function send_message() {
 
     // listen for response tokens
     const eventSource = new EventSource(
-        base_uri + "message.php?chat_id=" + chat_id
+        base_uri + "message.php?chat_id=" + chat_id + "&model=" + chatgpt_model + "&mode=" + selected_mode.value
     );
 
     // handle errors
@@ -148,12 +152,14 @@ async function send_message() {
     eventSource.addEventListener( "message", function( event ) {
         let json = JSON.parse( event.data );
 
+        const speech_mode = selected_mode.value === "speech";
+
         // append token to response
         response += json.content;
         paragraph += json.content;
 
         if( paragraph.indexOf( "\n\n" ) !== -1 ) {
-            if( speech_enabled && paragraph.trim() !== "" ) {
+            if( speech_mode && paragraph.trim() !== "" ) {
                 audio_queue.add( paragraph );
             }
 
@@ -173,6 +179,8 @@ async function send_message() {
     eventSource.addEventListener( "stop", async function( event ) {
         eventSource.close();
 
+        const speech_mode = selected_mode.value === "speech";
+
         if( new_chat ) {
             let title_link = create_chat_link( chat_id );
 
@@ -181,7 +189,7 @@ async function send_message() {
             new_chat = false;
         }
 
-        if( speech_enabled && paragraph.trim() !== "" ) {
+        if( speech_mode && paragraph.trim() !== "" ) {
             audio_queue.add( paragraph );
             paragraph = "";
         }
@@ -345,6 +353,13 @@ function create_copy_button( text_to_copy ) {
     return copy_button;
 }
 
+function convert_links( text ) {
+    text = text.replace( '(sandbox:/data/', '(data/' );
+    text = text.replace( '(sandbox:/mnt/data/', '(data/' );
+    text = text.replace( '(sandbox:data/', '(data/' );
+    return text;
+}
+
 /**
  * Converts Markdown formatted response into HTML
  *
@@ -352,6 +367,7 @@ function create_copy_button( text_to_copy ) {
  * @returns HTML formatted text
  */
 function convert_markdown( text ) {
+    text = convert_links( text );
     text = text.trim();
 
     // add ending code block tags when missing
@@ -391,6 +407,8 @@ function convert_markdown( text ) {
             );
         }
     }
+
+    formatted_message = formatted_message.replace( '<a href=', '<a target="_blank" href=' );
 
     return formatted_message;
 }

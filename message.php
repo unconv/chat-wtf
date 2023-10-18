@@ -7,6 +7,16 @@ $settings = require( __DIR__ . "/settings.php" );
 require( __DIR__ . "/database.php" );
 require( __DIR__ . "/autoload.php" );
 
+$mode = $_REQUEST['mode'] ?? "normal";
+
+$code_interpreter_enabled = (
+    isset( $settings['code_interpreter']['enabled'] ) &&
+    $settings['code_interpreter']['enabled'] === true &&
+    $mode === "code_interpreter"
+);
+
+$model = $_REQUEST['model'] ?? $settings['model'] ?? "gpt-3.5-turbo";
+
 $db = get_db();
 $conversation_class = get_conversation_class( $db );
 
@@ -17,8 +27,11 @@ $conversation = $conversation_class->find( $chat_id, $db );
 
 if( ! $conversation ) {
     $conversation = new $conversation_class( $db );
+    // TODO: save model to conversation
+    // TODO: save mode to conversation
     $conversation->set_title( "Untitled chat" );
     $conversation->save();
+    $chat_id = $conversation->get_id();
 }
 
 $context = $conversation->get_messages();
@@ -53,8 +66,13 @@ $error = null;
 try {
     $chatgpt = new ChatGPT( $settings['api_key'] );
 
+    if( $code_interpreter_enabled ) {
+        $code_interpreter = new CodeInterpreter( $chat_id );
+        $chatgpt = $code_interpreter->init_chatgpt( $chatgpt );
+    }
+
     if( isset( $settings['model'] ) ) {
-        $chatgpt->set_model( $settings['model'] );
+        $chatgpt->set_model( $model );
     }
 
     foreach( $context as $message ) {
@@ -70,7 +88,15 @@ try {
                 break;
         }
     }
-    $response_text = $chatgpt->stream( StreamType::Event )->content;
+
+    if( $code_interpreter_enabled ) {
+        $response_text = $chatgpt->response()->content;
+
+        $code_interpreter->fake_stream( $response_text );
+    } else {
+        $response_text = $chatgpt->stream( StreamType::Event )->content;
+    }
+
 } catch ( Exception $e ) {
     $error = "Sorry, there was an unknown error in the OpenAI request";
 }

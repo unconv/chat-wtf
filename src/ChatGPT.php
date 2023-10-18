@@ -153,6 +153,8 @@ class ChatGPT {
             $fields["function_call"] = $this->function_call;
         }
 
+        error_log( "MODEL: " . $this->model );
+
         // make ChatGPT API request
         $ch = curl_init( "https://api.openai.com/v1/chat/completions" );
         curl_setopt( $ch, CURLOPT_HTTPHEADER, [

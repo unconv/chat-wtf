@@ -1,6 +1,15 @@
 <?php
 header( "Content-Type: application/json; charset=utf-8" );
 
+$settings = require( __DIR__ . "/settings.php" );
+
+if( ( $settings["speech_enabled"] ?? false ) !== true ) {
+    die( json_encode( [
+        "status" => "ERROR",
+        "response" => "Speech not enabled",
+    ] ) );
+}
+
 $speech_dir = __DIR__ . "/speech";
 $input_dir = $speech_dir . "/input";
 $output_dir = $speech_dir . "/output";
@@ -19,8 +28,6 @@ if( ! isset( $_POST['text'] ) ) {
         "response" => "No text prodived",
     ] ) );
 }
-
-$settings = require( __DIR__ . "/settings.php" );
 
 $text = $_POST['text'];
 
