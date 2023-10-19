@@ -1,26 +1,29 @@
 <?php
 class CodeInterpreter {
-    public string $data_dir;
+    public string $chat_dir;
 
     public function __construct(
         protected int $chat_id
     ) {
-        $data_dir = "data/" . $chat_id;
-        $this->data_dir = $data_dir;
+        $this->chat_dir = "data/" . $chat_id;
 
-        mkdir( __DIR__ . "/../" . $this->data_dir, 0777, true );
+        $chat_dir = $this->chat_dir;
+        $data_dir = $this->chat_dir . "/data";
 
-        register_shutdown_function( function() use ( $data_dir ) {
+        mkdir( __DIR__ . "/../" . $data_dir, 0777, true );
+
+        register_shutdown_function( function() use ( $data_dir, $chat_dir ) {
             if( count( glob( $data_dir . "/*" ) ) === 0 ) {
                 if( is_dir( $data_dir ) ) {
                     rmdir( $data_dir );
+                    rmdir( $chat_dir );
                 }
             }
         } );
     }
 
     public function init_chatgpt( ChatGPT $chatgpt ) {
-        $chatgpt->smessage( "You are an AI assistant that can read files and run Python code in order to answer the user's question. You can access a folder called '" . $this->data_dir . "/' from the Python code to read or write files. Always save visualizations and charts into a file. When creating links to files in the data directory in your response, use the format [link text](" . $this->data_dir . "/filename). When the task requires to process or read user provided data from files, always read the file content first, before running Python code. Don't assume the contents of files. When processing CSV files, read the file first before writing any Python code. You can also use Python code to download files or images from URLs. Note that Python code will always be run in an isolated environment, without access to variables from previous code. You can include images in your response with the format '![image name](" . $this->data_dir . "/image_filename.jpg)'" );
+        $chatgpt->smessage( "You are an AI assistant that can read files and run Python code in order to answer the user's question. You can access a folder called 'data/' from the Python code to read or write files. Always save visualizations and charts into a file. When creating links to files in the data directory in your response, use the format [link text](data/filename). When the task requires to process or read user provided data from files, always read the file content first, before running Python code. Don't assume the contents of files. When processing CSV files, read the file first before writing any Python code. You can also use Python code to download files or images from URLs. Note that Python code will always be run in an isolated environment, without access to variables from previous code. You can include images in your response with the format '![image name](data/image_filename.jpg)'. Include visualizations as images in your response." );
         $chatgpt->add_function( [$this, "read_file_contents"] );
         $chatgpt->add_function( [$this, "python"] );
 
@@ -56,7 +59,7 @@ class CodeInterpreter {
 
         $output = [];
         $result_code = NULL;
-        exec( $this->get_python_command() . " ".escapeshellarg( $temp_file )." 2>&1", $output, $result_code );
+        exec( "cd " . escapeshellarg( $this->chat_dir ) . "; " . $this->get_python_command() . " ".escapeshellarg( $temp_file )." 2>&1", $output, $result_code );
 
         if( file_exists( $temp_file ) ) unlink( $temp_file );
 
@@ -67,11 +70,11 @@ class CodeInterpreter {
     }
 
     public function get_filename( string $filename ): string {
-        if( strpos( $filename, $this->data_dir . "/" ) !== 0 ) {
-            return $this->data_dir . "/" . $filename;
+        if( strpos( $filename, "data/" ) !== 0 ) {
+            $filename = "data/" . $filename;
         }
 
-        return $filename;
+        return $this->chat_dir . "/" . $filename;
     }
 
     /**

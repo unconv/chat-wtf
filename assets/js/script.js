@@ -354,9 +354,10 @@ function create_copy_button( text_to_copy ) {
 }
 
 function convert_links( text ) {
-    text = text.replace( '(sandbox:/data/', '(data/' );
-    text = text.replace( '(sandbox:/mnt/data/', '(data/' );
-    text = text.replace( '(sandbox:data/', '(data/' );
+    text = text.replace( /\(data\//g, '(data/' + chat_id + '/data/' );
+    text = text.replace( /\(sandbox:\/data\//g, '(data/' + chat_id + '/data/' );
+    text = text.replace( /\(sandbox:\/mnt\/data\//g, '(data/' + chat_id + '/data/' );
+    text = text.replace( /\(sandbox:data\//g, '(data/' + chat_id + '/data/' );
     return text;
 }
 
