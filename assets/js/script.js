@@ -3,7 +3,21 @@ const send_button = document.querySelector( "#send-button" );
 const message_list = document.querySelector( "#chat-messages" );
 const new_chat_link = document.querySelector( "li.new-chat" );
 const conversations_list = document.querySelector( "ul.conversations" );
-const selected_mode = document.querySelector( "#assistant-mode" );
+const mode_buttons = document.querySelectorAll( ".mode-selector button" );
+const current_mode = document.querySelector( ".current-mode" );
+
+mode_buttons.forEach( (button) => {
+    button.addEventListener( "click", () => {
+        selected_mode = button.getAttribute( "data-mode" );
+
+        const new_icon = button.getAttribute( "data-icon" );
+        const old_icon = current_mode.getAttribute( "data-icon" );
+
+        current_mode.classList.remove( "fa-" + old_icon );
+        current_mode.classList.add( "fa-" + new_icon );
+        current_mode.setAttribute( "data-icon", new_icon) ;
+    } );
+} );
 
 const markdown_converter = new showdown.Converter({
     requireSpaceBeforeHeadingText: true,
@@ -120,7 +134,7 @@ async function send_message() {
     let data = new FormData();
     data.append( "chat_id", chat_id );
     data.append( "model", chatgpt_model );
-    data.append( "mode", selected_mode.value );
+    data.append( "mode", selected_mode );
     data.append( "message", question );
 
     // send message and get chat id
@@ -133,7 +147,7 @@ async function send_message() {
 
     // listen for response tokens
     const eventSource = new EventSource(
-        base_uri + "message.php?chat_id=" + chat_id + "&model=" + chatgpt_model + "&mode=" + selected_mode.value
+        base_uri + "message.php?chat_id=" + chat_id + "&model=" + chatgpt_model + "&mode=" + selected_mode
     );
 
     // handle errors
@@ -152,7 +166,7 @@ async function send_message() {
     eventSource.addEventListener( "message", function( event ) {
         let json = JSON.parse( event.data );
 
-        const speech_mode = selected_mode.value === "speech";
+        const speech_mode = selected_mode === "speech";
 
         // append token to response
         response += json.content;
@@ -179,7 +193,7 @@ async function send_message() {
     eventSource.addEventListener( "stop", async function( event ) {
         eventSource.close();
 
-        const speech_mode = selected_mode.value === "speech";
+        const speech_mode = selected_mode === "speech";
 
         if( new_chat ) {
             let title_link = create_chat_link( chat_id );

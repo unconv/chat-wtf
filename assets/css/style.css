@@ -33,6 +33,7 @@ html, body {
     --color-border2: #292d32;
     --color-user-message-border: #2f353d;
     --link-color: #11ba00;
+    --mode-selector-color: #1e1f21;
 }
 
 body {
@@ -343,6 +344,13 @@ main .view.show {
     display: flex;
 }
 
+.top-menu {
+    position: relative;
+    display: flex;
+    margin: 24px auto;
+    z-index: 2;
+}
+
 .model-selector {
     position: relative;
     border-radius: 11px;
@@ -350,8 +358,6 @@ main .view.show {
     display: flex;
     padding: 4px;
     gap: 4px;
-    margin: 24px auto;
-    z-index: 2;
 }
 
 .model-selector .model-button {
@@ -420,10 +426,57 @@ p.secondary {
     color: var(--color-secondary-p);
 }
 
-#assistant-mode {
-    width: 170px;
+.mode-selector {
+    border-radius: 11px;
+    background: var(--mode-selector-color);
+    margin-left: 6px;
+    border: none;
+    width: 48px;
+    padding: 15px;
+    position: relative;
     text-align: center;
-    margin: 6px auto;
+}
+
+.mode-selector:hover {
+    background: var(--color-secondary);
+}
+
+.mode-selector:hover .mode-selector-wrap {
+    display: block;
+}
+
+.mode-selector ul,
+.mode-selector li {
+    list-style: none;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.mode-selector-wrap {
+    display: none;
+    position: absolute;
+    bottom: 0px;
+    right: 0;
+    transform: translateY( 100% );
+}
+
+.mode-selector ul {
+    width: 150px;
+    background: var(--color-secondary);
+    border-radius: 5px;
+    margin-top: 6px;
+    overflow: hidden;
+}
+
+.mode-selector button {
+    width: 100%;
+    border: none;
+    border-radius: 0;
+}
+
+.mode-selector button i.fa {
+    width: 22px;
 }
 
 .logo {

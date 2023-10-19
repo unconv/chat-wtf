@@ -43,6 +43,7 @@ $speech_enabled = ( $settings['speech_enabled'] ?? false ) === true;
         let new_chat = <?php echo $new_chat ? "true" : "false"; ?>;
         let speech_enabled = <?php echo $speech_enabled ? "true" : "false"; ?>;
         let chatgpt_model = '<?php echo $settings['model']; ?>';
+        let selected_mode = 'normal';
     </script>
 </head>
 <body>
@@ -123,27 +124,60 @@ $speech_enabled = ( $settings['speech_enabled'] ?? false ) === true;
             ?>
         </div>
         <div class="view new-chat-view <?php echo $chat_id ? "" : "show"; ?>">
-            <div class="model-selector">
-                <div class="model-button button gpt-3 <?php echo ( ! str_contains( $settings['model'], "gpt-4" ) ? "selected" : "" ); ?>" data-model="gpt-3.5-turbo" data-name="GPT-3.5">
-                    <i class="fa fa-bolt"></i> GPT-3.5
-                    <div class="model-info">
-                        <div class="model-info-box">
-                            <p>Our fastest model, great for most every day tasks.</p>
+            <div class="top-menu">
+                <div class="model-selector">
+                    <div class="model-button button gpt-3 <?php echo ( ! str_contains( $settings['model'], "gpt-4" ) ? "selected" : "" ); ?>" data-model="gpt-3.5-turbo" data-name="GPT-3.5">
+                        <i class="fa fa-bolt"></i> GPT-3.5
+                        <div class="model-info">
+                            <div class="model-info-box">
+                                <p>Our fastest model, great for most every day tasks.</p>
 
-                            <p class="secondary">Available to Free and Plus users</p>
+                                <p class="secondary">Available to Free and Plus users</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="model-button button gpt-4 <?php echo ( str_contains( $settings['model'], "gpt-4" ) ? "selected" : "" ); ?>" data-model="gpt-4" data-name="GPT-4">
+                        <i class="fa fa-wand-magic-sparkles"></i> GPT-4
+                        <div class="model-info">
+                            <div class="model-info-box">
+                                <p>Our most capable model, great for creative stuff.</p>
+
+                                <p class="secondary">Available for Plus users.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="model-button button gpt-4 <?php echo ( str_contains( $settings['model'], "gpt-4" ) ? "selected" : "" ); ?>" data-model="gpt-4" data-name="GPT-4">
-                    <i class="fa fa-wand-magic-sparkles"></i> GPT-4
-                    <div class="model-info">
-                        <div class="model-info-box">
-                            <p>Our most capable model, great for creative stuff.</p>
+                <?php
+                $options = [
+                    "normal" => ["Normal", "message"],
+                ];
+                if( ( $settings['speech_enabled'] ?? false ) === true ) {
+                    $options["speech"] = ["Speech", "volume-high"];
+                }
+                if( ( $settings['code_interpreter']['enabled'] ?? false ) === true ) {
+                    $options["code_interpreter"] = ["CodeInterpreter", "terminal"];
+                }
+                if( count( $options ) > 1 ) {
+                    ?>
+                    <div class="mode-selector button">
+                        <i class="fa fa-message current-mode" data-icon="message"></i>
+                        <div class="mode-selector-wrap">
+                            <ul>
+                                <?php
+                                // TODO: remember model selection
+                                foreach( $options as $option => $value ) {
+                                    $name = htmlspecialchars( $value[0] );
+                                    $icon = htmlspecialchars( $value[1] );
 
-                            <p class="secondary">Available for Plus users.</p>
+                                    echo '<li><button data-mode="'.htmlspecialchars( $option ).'" data-icon="'.$icon.'"><i class="fa fa-'.$icon.'"></i> '.$name.'</button></li>';
+                                }
+                                ?>
+                            </ul>
                         </div>
                     </div>
-                </div>
+                    <?php
+                }
+                ?>
             </div>
 
             <div class="logo">
@@ -156,29 +190,6 @@ $speech_enabled = ( $settings['speech_enabled'] ?? false ) === true;
                 <textarea id="message" rows="1" placeholder="Send a message"></textarea>
                 <button id="send-button"><i class="fa fa-paper-plane"></i></button>
             </div>
-            <?php
-            $options = [
-                "normal" => "Normal mode",
-            ];
-            if( ( $settings['speech_enabled'] ?? false ) === true ) {
-                $options["speech"] = "Speech mode";
-            }
-            if( ( $settings['code_interpreter']['enabled'] ?? false ) === true ) {
-                $options["code_interpreter"] = "CodeInterpreter mode";
-            }
-            if( count( $options ) > 1 ) {
-                ?>
-                <select id="assistant-mode">
-                    <?php
-                    // TODO: remember model selection
-                    foreach( $options as $option => $value ) {
-                        echo '<option value="'.htmlspecialchars( $option ).'">'.htmlspecialchars( $value ).'</option>';
-                    }
-                    ?>
-                </select>
-                <?php
-            }
-            ?>
             <div class="disclaimer">ChatWTF uses the OpenAI ChatGPT API but is not affiliated with OpenAI</div>
         </div>
     </main>
