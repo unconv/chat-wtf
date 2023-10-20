@@ -27,6 +27,10 @@ $speech_enabled = ( $settings['speech_enabled'] ?? false ) === true;
 $current_model = $conversation?->get_model() ?? $settings['model'];
 $current_mode = $conversation?->get_mode() ?? "normal";
 
+if( empty( $current_mode ) ) {
+    $current_mode = "normal";
+}
+
 $mode_icons = [
     "normal" => "message",
     "speech" => "volume-high",
