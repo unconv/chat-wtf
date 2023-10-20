@@ -24,6 +24,25 @@ if( $base_uri != "" ) {
 
 $speech_enabled = ( $settings['speech_enabled'] ?? false ) === true;
 
+$current_model = $conversation?->get_model() ?? $settings['model'];
+$current_mode = $conversation?->get_mode() ?? "normal";
+
+$mode_icons = [
+    "normal" => "message",
+    "speech" => "volume-high",
+    "code_interpreter" => "terminal",
+];
+
+$current_mode_icon = $mode_icons[$current_mode];
+
+$mode_names = [
+    "normal" => "",
+    "speech" => "(Speech)",
+    "code_interpreter" => "(CodeInterpreter)",
+];
+
+$current_mode_name = $mode_names[$current_mode];
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -42,8 +61,8 @@ $speech_enabled = ( $settings['speech_enabled'] ?? false ) === true;
         let chat_id = <?php echo intval( $chat_id ); ?>;
         let new_chat = <?php echo $new_chat ? "true" : "false"; ?>;
         let speech_enabled = <?php echo $speech_enabled ? "true" : "false"; ?>;
-        let chatgpt_model = '<?php echo $settings['model']; ?>';
-        let selected_mode = 'normal';
+        let chatgpt_model = '<?php echo $current_model; ?>';
+        let selected_mode = '<?php echo $current_mode; ?>';
     </script>
 </head>
 <body>
@@ -90,7 +109,7 @@ $speech_enabled = ( $settings['speech_enabled'] ?? false ) === true;
     <main>
         <div class="view conversation-view <?php echo $chat_id ? "show" : ""; ?>" id="chat-messages">
             <div class="model-name">
-                <i class="fa fa-bolt"></i> <span class="current-model"><?php echo ( str_contains( $settings['model'], "gpt-4" ) ? "GPT-4" : "GPT-3.5" ) ?></span>
+                <i class="fa fa-bolt"></i> <span class="current-model"><?php echo ( str_contains( $current_model, "gpt-4" ) ? "GPT-4" : "GPT-3.5" ) ?></span> <span class="current-mode-name"><?php echo $current_mode_name; ?></span>
             </div>
             <?php
             $chat_history = $chat_id ? $conversation->get_messages( $chat_id, $db ) : [];
@@ -126,7 +145,7 @@ $speech_enabled = ( $settings['speech_enabled'] ?? false ) === true;
         <div class="view new-chat-view <?php echo $chat_id ? "" : "show"; ?>">
             <div class="top-menu">
                 <div class="model-selector">
-                    <div class="model-button button gpt-3 <?php echo ( ! str_contains( $settings['model'], "gpt-4" ) ? "selected" : "" ); ?>" data-model="gpt-3.5-turbo" data-name="GPT-3.5">
+                    <div class="model-button button gpt-3 <?php echo ( ! str_contains( $current_model, "gpt-4" ) ? "selected" : "" ); ?>" data-model="gpt-3.5-turbo" data-name="GPT-3.5">
                         <i class="fa fa-bolt"></i> GPT-3.5
                         <div class="model-info">
                             <div class="model-info-box">
@@ -136,7 +155,7 @@ $speech_enabled = ( $settings['speech_enabled'] ?? false ) === true;
                             </div>
                         </div>
                     </div>
-                    <div class="model-button button gpt-4 <?php echo ( str_contains( $settings['model'], "gpt-4" ) ? "selected" : "" ); ?>" data-model="gpt-4" data-name="GPT-4">
+                    <div class="model-button button gpt-4 <?php echo ( str_contains( $current_model, "gpt-4" ) ? "selected" : "" ); ?>" data-model="gpt-4" data-name="GPT-4">
                         <i class="fa fa-wand-magic-sparkles"></i> GPT-4
                         <div class="model-info">
                             <div class="model-info-box">
@@ -160,11 +179,10 @@ $speech_enabled = ( $settings['speech_enabled'] ?? false ) === true;
                 if( count( $options ) > 1 ) {
                     ?>
                     <div class="mode-selector button">
-                        <i class="fa fa-message current-mode" data-icon="message"></i>
+                        <i class="fa fa-<?php echo $current_mode_icon; ?> current-mode-icon" data-icon="<?php echo $current_mode_icon; ?>"></i>
                         <div class="mode-selector-wrap">
                             <ul>
                                 <?php
-                                // TODO: remember model selection
                                 foreach( $options as $option => $value ) {
                                     $name = htmlspecialchars( $value[0] );
                                     $icon = htmlspecialchars( $value[1] );

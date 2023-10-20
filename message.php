@@ -27,9 +27,9 @@ $conversation = $conversation_class->find( $chat_id, $db );
 
 if( ! $conversation ) {
     $conversation = new $conversation_class( $db );
-    // TODO: save model to conversation
-    // TODO: save mode to conversation
     $conversation->set_title( "Untitled chat" );
+    $conversation->set_mode( $mode );
+    $conversation->set_model( $model );
     $conversation->save();
     $chat_id = $conversation->get_id();
 }

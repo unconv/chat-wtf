@@ -3,6 +3,8 @@ BEGIN TRANSACTION;
 CREATE TABLE IF NOT EXISTS "conversations" (
 	"id" INTEGER NOT NULL  ,
 	"title" VARCHAR(64) NOT NULL  ,
+	"model" VARCHAR(64) NOT NULL  ,
+	"mode" VARCHAR(16) NOT NULL  ,
 	PRIMARY KEY ("id")
 );
 CREATE TABLE IF NOT EXISTS "messages" (

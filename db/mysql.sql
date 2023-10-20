@@ -29,7 +29,9 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `conversations` (
   `id` int NOT NULL,
-  `title` varchar(64) COLLATE utf8mb4_swedish_ci NOT NULL
+  `title` varchar(64) COLLATE utf8mb4_swedish_ci NOT NULL,
+  `model` varchar(64) COLLATE utf8mb4_swedish_ci NOT NULL,
+  `mode` varchar(16) COLLATE utf8mb4_swedish_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 -- --------------------------------------------------------

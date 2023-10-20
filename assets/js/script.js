@@ -4,18 +4,27 @@ const message_list = document.querySelector( "#chat-messages" );
 const new_chat_link = document.querySelector( "li.new-chat" );
 const conversations_list = document.querySelector( "ul.conversations" );
 const mode_buttons = document.querySelectorAll( ".mode-selector button" );
-const current_mode = document.querySelector( ".current-mode" );
+const current_mode_icon = document.querySelector( ".current-mode-icon" );
+const current_mode_name = document.querySelector( ".current-mode-name" );
+
+const mode_names = {
+    "normal": "",
+    "speech": "(Speech)",
+    "code_interpreter": "(CodeInterpreter)"
+};
 
 mode_buttons.forEach( (button) => {
     button.addEventListener( "click", () => {
         selected_mode = button.getAttribute( "data-mode" );
 
         const new_icon = button.getAttribute( "data-icon" );
-        const old_icon = current_mode.getAttribute( "data-icon" );
+        const old_icon = current_mode_icon.getAttribute( "data-icon" );
 
-        current_mode.classList.remove( "fa-" + old_icon );
-        current_mode.classList.add( "fa-" + new_icon );
-        current_mode.setAttribute( "data-icon", new_icon) ;
+        current_mode_icon.classList.remove( "fa-" + old_icon );
+        current_mode_icon.classList.add( "fa-" + new_icon );
+        current_mode_icon.setAttribute( "data-icon", new_icon);
+
+        current_mode_name.textContent = mode_names[selected_mode];
     } );
 } );
 

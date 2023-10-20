@@ -26,7 +26,7 @@ show_user_menu.addEventListener( "click", function() {
 const models = document.querySelectorAll(" .model-button");
 
 for( const model of models ) {
-    model.addEventListener("click", function() {
+    model.addEventListener("click", () => {
         document.querySelector(".model-button.selected")?.classList.remove("selected");
         model.classList.add("selected");
         chatgpt_model = model.getAttribute("data-model");
