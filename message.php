@@ -15,7 +15,11 @@ $code_interpreter_enabled = (
     $mode === "code_interpreter"
 );
 
-$model = $_REQUEST['model'] ?? $settings['model'] ?? "gpt-3.5-turbo";
+$model = $_REQUEST['model'] ?? $settings['model'] ?? "undefined";
+
+if( empty( $model ) ) {
+    $model = $settings["model"] ?? "undefined";
+}
 
 $db = get_db();
 $conversation_class = get_conversation_class( $db );
