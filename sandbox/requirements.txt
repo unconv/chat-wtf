@@ -1,0 +1,14 @@
+requests
+Pillow
+matplotlib
+mpld3
+pandas
+numpy
+scipy
+scikit-learn
+dash
+bokeh
+streamlit
+beautifulsoup4
+lxml
+ipywidgets

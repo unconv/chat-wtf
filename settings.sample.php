@@ -35,6 +35,10 @@ return [
     // CodeInterpreter settings
     "code_interpreter" => [
         "enabled" => false,
+        "sandbox" => [
+            "enabled" => false,
+            "container" => "chatwtf-sandbox",
+        ]
     ],
 
     // ElevenLabs settings

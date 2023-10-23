@@ -94,6 +94,8 @@ try {
     }
 
     if( $code_interpreter_enabled ) {
+        // TODO: allow user to accept code first before running
+        // TODO: implement "show work" feature
         $response_text = $chatgpt->response()->content;
 
         $code_interpreter->fake_stream( $response_text );

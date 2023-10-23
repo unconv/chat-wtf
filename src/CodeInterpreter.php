@@ -1,14 +1,19 @@
 <?php
 class CodeInterpreter {
     public string $chat_dir;
+    public string $data_dir;
+    protected array $settings;
 
     public function __construct(
         protected int $chat_id
     ) {
+        $this->settings = require( __DIR__ . "/../settings.php" );
+
         $this->chat_dir = "data/" . $chat_id;
+        $this->data_dir = $this->chat_dir . "/data";
 
         $chat_dir = $this->chat_dir;
-        $data_dir = $this->chat_dir . "/data";
+        $data_dir = $this->data_dir;
 
         mkdir( __DIR__ . "/../" . $data_dir, 0777, true );
 
@@ -37,10 +42,8 @@ class CodeInterpreter {
      * @return string The python command
      */
     public function get_python_command(): string {
-        $settings = require( __DIR__ . "/../settings.php" );
-
-        if( isset( $settings['python_command'] ) ) {
-            return $settings['python_command'];
+        if( isset( $this->settings['python_command'] ) ) {
+            return $this->settings['python_command'];
         }
 
         if( stripos( PHP_OS, "win" ) === 0 ) {
@@ -59,7 +62,23 @@ class CodeInterpreter {
 
         $output = [];
         $result_code = NULL;
-        exec( "cd " . escapeshellarg( $this->chat_dir ) . "; " . $this->get_python_command() . " ".escapeshellarg( $temp_file )." 2>&1", $output, $result_code );
+
+        $data_dir_full_path = __DIR__ . "/../" . $this->data_dir;
+        $sandbox_settings = $this->settings['code_interpreter']['sandbox'];
+
+        // TODO: create a way to run isolated Python code even
+        //       when the app is running inside a Docker container
+        if( ($sandbox_settings['enabled'] ?? false) === true ) {
+            if( ! isset( $sandbox_settings['container'] ) ) {
+                throw new \Exception( "Container name missing from settings" );
+            }
+
+            $container_name = $sandbox_settings["container"];
+
+            exec( "docker run -i --rm -v " . escapeshellarg( $data_dir_full_path ) . ":/usr/src/app/data " . escapeshellarg( $container_name ) . " python3 -c ".escapeshellarg( $code )." 2>&1", $output, $result_code );
+        } else {
+            exec( "cd " . escapeshellarg( $this->chat_dir ) . "; " . $this->get_python_command() . " ".escapeshellarg( $temp_file )." 2>&1", $output, $result_code );
+        }
 
         if( file_exists( $temp_file ) ) unlink( $temp_file );
 
