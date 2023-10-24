@@ -54,12 +54,6 @@ class CodeInterpreter {
     }
 
     public function run_python_code( string $code ): PythonResult {
-        $temp_file = "/tmp/code.py";
-
-        if( ! file_put_contents( $temp_file, $code ) ) {
-            throw new \Exception( "Unable to write code file" );
-        }
-
         $output = [];
         $result_code = NULL;
 
@@ -74,13 +68,13 @@ class CodeInterpreter {
             }
 
             $container_name = $sandbox_settings["container"];
+            $python_i_command = "echo ".escapeshellarg( $code )." | python3 -i";
 
-            exec( "docker run -i --rm -v " . escapeshellarg( $data_dir_full_path ) . ":/usr/src/app/data " . escapeshellarg( $container_name ) . " python3 -c ".escapeshellarg( $code )." 2>&1", $output, $result_code );
+            exec( "docker run -i --rm -v " . escapeshellarg( $data_dir_full_path ) . ":/usr/src/app/data " . escapeshellarg( $container_name ) . " bash -c " . escapeshellarg( $python_i_command ) . " 2>&1", $output, $result_code );
         } else {
-            exec( "cd " . escapeshellarg( $this->chat_dir ) . "; " . $this->get_python_command() . " ".escapeshellarg( $temp_file )." 2>&1", $output, $result_code );
+            $python_i_command = "echo ".escapeshellarg( $code )." | " . $this->get_python_command() . " -i";
+            exec( "cd " . escapeshellarg( $this->chat_dir ) . "; " . $python_i_command . " 2>&1", $output, $result_code );
         }
-
-        if( file_exists( $temp_file ) ) unlink( $temp_file );
 
         return new PythonResult(
             output: implode( "\n", $output ),
@@ -159,15 +153,6 @@ class CodeInterpreter {
             // convert "\n" to newline
             $code = str_replace( '\n', "\n", $code );
         }
-
-        $lines = explode( "\n", $code );
-        $row_count = count( $lines );
-
-        if( ! str_contains( $lines[$row_count-1], "print(" ) ) {
-            $lines[$row_count-1] = "print(" . $lines[$row_count-1] . ")";
-        }
-
-        $code = implode( "\n", $lines );
 
         $result = $this->run_python_code( $code );
 
