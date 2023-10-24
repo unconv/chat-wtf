@@ -118,28 +118,55 @@ $current_mode_name = $mode_names[$current_mode];
             <?php
             $chat_history = $chat_id ? $conversation->get_messages( $chat_id, $db ) : [];
 
+            $function_result = "";
             foreach( $chat_history as $chat_message ) {
-                if( $chat_message["role"] === "system" ) {
+                if( $chat_message->role === "system" ) {
                     continue;
                 }
-                $role = htmlspecialchars( $chat_message['role'] );
+                $role = htmlspecialchars( $chat_message->role );
 
-                if( $role === "assistant" ) {
+                $classmap = [
+                    "assistant" => "assistant",
+                    "user" => "user",
+                    "function" => "assistant",
+                    "function_call" => "assistant",
+                ];
+
+                $message_class = $classmap[$role];
+
+                if( $message_class === "assistant" ) {
                     $user_icon_class = "gpt";
                     $user_icon_letter = "G";
                 } else {
                     $user_icon_class = "";
                     $user_icon_letter = "U";
                 }
+
+                $message_content = "";
+                if( $role === "function_call" ) {
+                    if( $chat_message->function_name === "python" ) {
+                        $code = CodeInterpreter::parse_arguments( $chat_message->function_arguments );
+                        $message_content = htmlspecialchars( "I want to run the following code:\n\n```\n" . $code . "\n```" );
+                    } else {
+                        $message_content = htmlspecialchars( "<unknown function>" );
+                    }
+                } elseif( $role === "function" ) {
+                    $result_text = CodeInterpreter::parse_result( $chat_message->content );
+                    $function_result = htmlspecialchars( "Result from code:\n\n```\n" . $result_text . "\n```\n\n" );
+                    continue;
+                } else {
+                    $message_content = $function_result . htmlspecialchars( $chat_message->content );
+                    $function_result = "";
+                }
                 ?>
-                <div class="<?php echo $role; ?> message">
+                <div class="<?php echo $message_class; ?> message">
                     <div class="identity">
                         <i class="<?php echo $user_icon_class; ?> user-icon">
                             <?php echo $user_icon_letter; ?>
                         </i>
                     </div>
                     <div class="content">
-                        <?php echo htmlspecialchars( $chat_message['content'] ); ?>
+                        <?php echo $message_content; ?>
                     </div>
                 </div>
                 <?php

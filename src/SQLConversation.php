@@ -53,6 +53,9 @@ class SQLConversation implements ConversationInterface
         return $conversation;
     }
 
+    /**
+     * @return array<Message>
+     */
     public function get_messages(): array {
         if( ! isset( $this->chat_id ) ) {
             return [];
@@ -63,26 +66,45 @@ class SQLConversation implements ConversationInterface
             ":chat_id" => $this->chat_id,
         ] );
 
-        return $stmt->fetchAll( PDO::FETCH_ASSOC );
+        $messages = $stmt->fetchAll( PDO::FETCH_ASSOC );
+
+        $message_list = [];
+
+        foreach( $messages as $message ) {
+            $message_list[] = new Message(
+                role: $message["role"],
+                content: $message["content"],
+                function_name: $message["function_name"],
+                function_arguments: $message["function_arguments"],
+            );
+        }
+
+        return $message_list;
     }
 
-    public function add_message( $message ): bool {
+    public function add_message( Message $message ): bool {
         $stmt = $this->db->prepare( "
             INSERT INTO messages (
                 `role`,
                 `content`,
+                `function_name`,
+                `function_arguments`,
                 `conversation`,
                 `timestamp`
             ) VALUES (
                 :the_role,
                 :the_content,
+                :the_function_name,
+                :the_function_arguments,
                 :the_conversation,
                 :the_timestamp
             )"
         );
         $stmt->execute( [
-            ":the_role" => $message['role'],
-            ":the_content" => $message['content'],
+            ":the_role" => $message->role,
+            ":the_content" => $message->content ?? "", // TODO: update database to allow NULL
+            ":the_function_name" => $message->function_name,
+            ":the_function_arguments" => $message->function_arguments,
             ":the_conversation" => $this->chat_id,
             ":the_timestamp" => date( "Y-m-d H:i:s" ),
         ] );

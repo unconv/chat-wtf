@@ -15,7 +15,10 @@ class CodeInterpreter {
         $chat_dir = $this->chat_dir;
         $data_dir = $this->data_dir;
 
-        mkdir( __DIR__ . "/../" . $data_dir, 0777, true );
+        $abs_data_dir = __DIR__ . "/../" . $data_dir;
+        if( ! file_exists( $abs_data_dir ) ) {
+            mkdir( $abs_data_dir, 0777, true );
+        }
 
         register_shutdown_function( function() use ( $data_dir, $chat_dir ) {
             if( count( glob( $data_dir . "/*" ) ) === 0 ) {
@@ -33,6 +36,37 @@ class CodeInterpreter {
         $chatgpt->add_function( [$this, "python"] );
 
         return $chatgpt;
+    }
+
+    /**
+     * Parses the code from ChatGPT arguments
+     *
+     * @param string $arguments The arguments from ChatGPT
+     * @return string the code
+     */
+    public static function parse_arguments( string $arguments ): string {
+        $args = json_decode( $arguments );
+
+        if( $args === null ) {
+            $code = $arguments;
+        } else {
+            $code = $args->code;
+        }
+
+        return $code;
+    }
+
+    public static function parse_result( string $json_python_result ) {
+        $result = json_decode( $json_python_result );
+
+        // TODO: handle detection of errors better
+        if( str_contains( $result->output, "Traceback" ) ) {
+            return $result->output;
+        } else {
+            // TODO: handle parsing last output line better
+            $lines = explode( ">>>", $result->output );
+            return trim( $lines[count($lines)-1] ) ?: "<no output>";
+        }
     }
 
     /**

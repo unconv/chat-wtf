@@ -38,25 +38,51 @@ if( ! $conversation ) {
     $chat_id = $conversation->get_id();
 }
 
+if( $code_interpreter_enabled ) {
+    $code_interpreter = new CodeInterpreter( $chat_id );
+}
+
 $context = $conversation->get_messages();
 
 if( empty( $context ) && ! empty( $settings['system_message'] ) ) {
-    $system_message = [
-        "role" => "system",
-        "content" => $settings['system_message'],
-    ];
+    $system_message = new Message(
+        role: "system",
+        content: $settings['system_message'],
+    );
 
     $context[] = $system_message;
     $conversation->add_message( $system_message );
 }
 
 if( isset( $_POST['message'] ) ) {
-    $message = [
-        "role" => "user",
-        "content" => $_POST['message'],
-    ];
+    $last_message = $context[count( $context ) - 1] ?? null;
+
+    $message = new Message(
+        role: "user",
+        content: $_POST['message'],
+    );
 
     $conversation->add_message( $message );
+
+    if(
+        $code_interpreter_enabled &&
+        $last_message &&
+        $last_message->role === "function_call" &&
+        $last_message->function_name === "python" &&
+        $_POST['message'] === "Yes, run the code."
+    ) {
+        $code = CodeInterpreter::parse_arguments( $last_message->function_arguments );
+
+        $response = $code_interpreter->python( $code );
+
+        $message = new Message(
+            role: "function",
+            content: $response,
+            function_name: "python",
+        );
+
+        $conversation->add_message( $message );
+    }
 
     echo $conversation->get_id();
     exit;
@@ -71,7 +97,6 @@ try {
     $chatgpt = new ChatGPT( $settings['api_key'] );
 
     if( $code_interpreter_enabled ) {
-        $code_interpreter = new CodeInterpreter( $chat_id );
         $chatgpt = $code_interpreter->init_chatgpt( $chatgpt );
     }
 
@@ -80,25 +105,60 @@ try {
     }
 
     foreach( $context as $message ) {
-        switch( $message['role'] ) {
+        switch( $message->role ) {
             case "user":
-                $chatgpt->umessage( $message['content'] );
+                $chatgpt->umessage( $message->content );
                 break;
             case "assistant":
-                $chatgpt->amessage( $message['content'] );
+                $chatgpt->amessage( $message->content );
+                break;
+            case "function_call":
+                $chatgpt->fcall( $message->function_name, $message->function_arguments );
+                break;
+            case "function":
+                $chatgpt->fresult( $message->function_name, $message->content );
                 break;
             case "system":
-                $chatgpt->smessage( $message['content'] );
+                $chatgpt->smessage( $message->content );
                 break;
         }
     }
 
     if( $code_interpreter_enabled ) {
-        // TODO: allow user to accept code first before running
-        // TODO: implement "show work" feature
-        $response_text = $chatgpt->response()->content;
+        $response = $chatgpt->response( raw_function_response: true );
 
-        $code_interpreter->fake_stream( $response_text );
+        if( isset( $response->function_call ) ) {
+            echo "data: " . json_encode( [
+                "role" => "function_call",
+                "function_name" => $response->function_call->name,
+                "function_arguments" => $response->function_call->arguments,
+            ] ) . "\n\n";
+            flush();
+
+            $message = new Message(
+                role: "function_call",
+                function_name: $response->function_call->name,
+                function_arguments: $response->function_call->arguments,
+            );
+
+            $conversation->add_message( $message );
+
+            echo "event: stop\n";
+            echo "data: stopped\n\n";
+            exit;
+        }
+
+        $response_text = $response->content;
+
+        $last_message = $context[count( $context ) - 1] ?? null;
+        if( $last_message->role === "function" ) {
+            $result_text = CodeInterpreter::parse_result( $last_message->content );
+            $extra_response = "Result from code:\n```\n" . $result_text . "\n```\n\n";
+        } else {
+            $extra_response = "";
+        }
+
+        $code_interpreter->fake_stream( $extra_response . $response_text );
     } else {
         $response_text = $chatgpt->stream( StreamType::Event )->content;
     }
@@ -113,10 +173,10 @@ if( $error !== null ) {
     flush();
 }
 
-$assistant_message = [
-    "role" => "assistant",
-    "content" => $response_text,
-];
+$assistant_message = new Message(
+    role: "assistant",
+    content: $response_text,
+);
 
 $conversation->add_message( $assistant_message );
 

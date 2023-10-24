@@ -56,7 +56,7 @@ send_button.addEventListener( "click", function( e ) {
 function submit_message() {
     message_box.style.height = "auto";
     add_message( "user", escapeHtml( message_input.value ) );
-    send_message();
+    send_message( message_input.value );
 }
 
 /**
@@ -128,10 +128,8 @@ class AudioQueue {
  * Sends a message to ChatGPT and appends the
  * message and the response to the chat
  */
-async function send_message() {
+async function send_message( message_text ) {
     show_view( ".conversation-view" );
-
-    let question = message_input.value;
 
     // intialize message with blinking cursor
     let message = add_message( "assistant", '<div id="cursor"></div>' );
@@ -144,7 +142,7 @@ async function send_message() {
     data.append( "chat_id", chat_id );
     data.append( "model", chatgpt_model );
     data.append( "mode", selected_mode );
-    data.append( "message", question );
+    data.append( "message", message_text );
 
     // send message and get chat id
     chat_id = await fetch( base_uri + "message.php", {
@@ -174,6 +172,20 @@ async function send_message() {
     // when a new token arrives
     eventSource.addEventListener( "message", function( event ) {
         let json = JSON.parse( event.data );
+
+        if( json.hasOwnProperty( "role" ) && json.role === "function_call" ) {
+            if( json.function_name === "python" ) {
+                update_message( message, "I would like to run the following code:\n\n```\n" + json.function_arguments + "\n```" );
+
+                message.querySelector(".content").insertAdjacentHTML( "beforeend", `
+                    <div class="action-selector">
+                        <button class="run-code">Run code</button>
+                        <button class="dont-run-code">Don't run code</button>
+                    </div>
+                ` );
+            }
+            return;
+        }
 
         const speech_mode = selected_mode === "speech";
 
@@ -207,7 +219,7 @@ async function send_message() {
         if( new_chat ) {
             let title_link = create_chat_link( chat_id );
 
-            create_title( question, response, title_link, chat_id );
+            create_title( message_text, response, title_link, chat_id );
 
             new_chat = false;
         }
@@ -466,9 +478,24 @@ document.addEventListener( "DOMContentLoaded", function() {
 
     // event listeners
     document.body.addEventListener( "click", function(e) {
-        const button = e.target.closest( "button.delete" );
-        if( button ) {
-            delete_button_action( button );
+        const delete_button = e.target.closest( "button.delete" );
+        if( delete_button ) {
+            delete_button_action( delete_button );
+            return;
+        }
+
+        if( e.target.closest( ".run-code" ) ) {
+            add_message( "user", "Yes, run the code." );
+            send_message( "Yes, run the code." );
+            e.target.closest( ".action-selector" ).remove();
+            return;
+        }
+
+        if( e.target.closest( ".dont-run-code" ) ) {
+            add_message( "user", "No, don't run the code." );
+            send_message( "No, don't run the code." );
+            e.target.closest( ".action-selector" ).remove();
+            return;
         }
     } );
 

@@ -60,6 +60,9 @@ class SessionConversation implements ConversationInterface
         return $conversation;
     }
 
+    /**
+     * @return array<Message>
+     */
     public function get_messages(): array {
         if( ! isset( $this->chat_id ) ) {
             return [];
@@ -68,7 +71,7 @@ class SessionConversation implements ConversationInterface
         return $_SESSION['chats'][$this->chat_id]["messages"] ?? [];
     }
 
-    public function add_message( $message ): bool {
+    public function add_message( Message $message ): bool {
         $_SESSION['chats'][$this->chat_id]["messages"][] = $message;
         return true;
     }

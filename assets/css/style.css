@@ -515,6 +515,22 @@ p.secondary {
     width: 100%;
 }
 
+.action-selector {
+    max-width: 300px;
+    display: flex;
+    gap: 5px;
+}
+
+.run-code {
+    background: #008c1a;
+    color: #fff;
+}
+
+.dont-run-code {
+    background: #8c0000;
+    color: #fff;
+}
+
 .user.message {
     color: var(--color-text);
 }

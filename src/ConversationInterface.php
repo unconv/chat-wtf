@@ -8,9 +8,12 @@ interface ConversationInterface
 
     public function find( int $chat_id  ): self|null;
 
-    public function get_messages();
+    /**
+     * @return array<Message>
+     */
+    public function get_messages(): array;
 
-    public function add_message( $message ): bool;
+    public function add_message( Message $message ): bool;
 
     public function set_id( string $id );
 
