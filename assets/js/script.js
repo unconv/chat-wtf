@@ -175,7 +175,8 @@ async function send_message( message_text ) {
 
         if( json.hasOwnProperty( "role" ) && json.role === "function_call" ) {
             if( json.function_name === "python" ) {
-                update_message( message, "I would like to run the following code:\n\n```\n" + json.function_arguments + "\n```" );
+                const args = JSON.parse( json.function_arguments );
+                update_message( message, "I would like to run the following code:\n\n```\n" + args.code + "\n```" );
 
                 message.querySelector(".content").insertAdjacentHTML( "beforeend", `
                     <div class="action-selector">

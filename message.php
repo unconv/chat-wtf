@@ -128,10 +128,12 @@ try {
         $response = $chatgpt->response( raw_function_response: true );
 
         if( isset( $response->function_call ) ) {
+            $code = CodeInterpreter::parse_arguments( $response->function_call->arguments );
+
             echo "data: " . json_encode( [
                 "role" => "function_call",
                 "function_name" => $response->function_call->name,
-                "function_arguments" => $response->function_call->arguments,
+                "function_arguments" => json_encode( ["code" => $code] ),
             ] ) . "\n\n";
             flush();
 

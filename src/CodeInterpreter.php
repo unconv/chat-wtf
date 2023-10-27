@@ -53,6 +53,25 @@ class CodeInterpreter {
             $code = $args->code;
         }
 
+        $code = self::fix_code_hallucinations( $code );
+
+        return $code;
+    }
+
+    public static function fix_code_hallucinations( string $code ) {
+        // fix ChatGPT hallucinations
+        if( str_contains( $code, '"code": "' ) ) {
+            error_log( "NOTICE: Fixing ChatGPT hallucinated arguments" );
+
+            $code = explode( '"code": "', $code, 2 );
+            $code = trim( $code[1] );
+            $code = trim( rtrim( $code, '}' ) );
+            $code = trim( rtrim( $code, '"' ) );
+
+            // convert "\n" to newline
+            $code = str_replace( '\n', "\n", $code );
+        }
+
         return $code;
     }
 
@@ -69,6 +88,10 @@ class CodeInterpreter {
         }
     }
 
+    public function is_windows(): bool {
+        return stripos( PHP_OS, "win" ) === 0;
+    }
+
     /**
      * Determines the Python command to run based on the
      * operating system or the settings
@@ -80,7 +103,7 @@ class CodeInterpreter {
             return $this->settings['python_command'];
         }
 
-        if( stripos( PHP_OS, "win" ) === 0 ) {
+        if( $this->is_windows() ) {
             return "python";
         }
 
@@ -93,6 +116,12 @@ class CodeInterpreter {
 
         $data_dir_full_path = __DIR__ . "/../" . $this->data_dir;
         $sandbox_settings = $this->settings['code_interpreter']['sandbox'];
+        $code_file_path = $data_dir_full_path . "/code.py";
+        $code_file_path = str_replace( "/", DIRECTORY_SEPARATOR, $code_file_path );
+
+        if( file_put_contents( $code_file_path, $code ) === false ) {
+            throw new \Exception( "Unable to write code file" );
+        }
 
         // TODO: create a way to run isolated Python code even
         //       when the app is running inside a Docker container
@@ -102,12 +131,16 @@ class CodeInterpreter {
             }
 
             $container_name = $sandbox_settings["container"];
-            $python_i_command = "echo ".escapeshellarg( $code )." | python3 -i";
 
-            exec( "docker run -i --rm -v " . escapeshellarg( $data_dir_full_path ) . ":/usr/src/app/data " . escapeshellarg( $container_name ) . " bash -c " . escapeshellarg( $python_i_command ) . " 2>&1", $output, $result_code );
+            exec( "docker run -i --rm -v " . escapeshellarg( $data_dir_full_path ) . ":/usr/src/app/data " . escapeshellarg( $container_name ) . " bash run_code.sh 2>&1", $output, $result_code );
         } else {
-            $python_i_command = "echo ".escapeshellarg( $code )." | " . $this->get_python_command() . " -i";
-            exec( "cd " . escapeshellarg( $this->chat_dir ) . "; " . $python_i_command . " 2>&1", $output, $result_code );
+            $cmd_separator = $this->is_windows() ? "&" : ";";
+
+            exec( "cd " . escapeshellarg( $this->chat_dir ) . " ".$cmd_separator." " . $this->get_python_command() . " " . escapeshellarg( $code_file_path ) . " 2>&1", $output, $result_code );
+        }
+
+        if( file_exists( $code_file_path ) ) {
+            unlink( $code_file_path );
         }
 
         return new PythonResult(
@@ -175,18 +208,16 @@ class CodeInterpreter {
     public function python( string $code ): string {
         $code = trim( $code );
 
-        // fix ChatGPT hallucinations
-        if( str_contains( $code, '"code": "' ) ) {
-            error_log( "NOTICE: Fixing ChatGPT hallucinated arguments" );
+        $code = self::fix_code_hallucinations( $code );
 
-            $code = explode( '"code": "', $code, 2 );
-            $code = trim( $code[1] );
-            $code = trim( rtrim( $code, '}' ) );
-            $code = trim( rtrim( $code, '"' ) );
+        $lines = explode( "\n", $code );
+        $row_count = count( $lines );
 
-            // convert "\n" to newline
-            $code = str_replace( '\n', "\n", $code );
+        if( ! str_contains( $lines[$row_count-1], "print(" ) ) {
+            $lines[$row_count-1] = "print(" . $lines[$row_count-1] . ")";
         }
+
+        $code = implode( "\n", $lines );
 
         $result = $this->run_python_code( $code );
 
