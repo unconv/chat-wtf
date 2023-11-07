@@ -17,6 +17,7 @@ class ChatGPT {
     protected bool $loaded = false;
     protected $function_call = "auto";
     protected string $model = "gpt-3.5-turbo";
+    protected array $params = [];
 
     public function __construct(
         protected string $api_key,
@@ -40,6 +41,18 @@ class ChatGPT {
 
     public function get_model() {
         return $this->model;
+    }
+
+    public function set_param( string $param, $value ) {
+        $this->params[$param] = $value;
+    }
+
+    public function set_params( array $params ) {
+        $this->params = $params;
+    }
+
+    public function get_params() {
+        return $this->params;
     }
 
     public function version() {
@@ -141,16 +154,18 @@ class ChatGPT {
         bool $raw_function_response = false,
         ?StreamType $stream_type = null,
     ) {
-        $fields = [
+        $params = [
             "model" => $this->model,
             "messages" => $this->messages,
         ];
 
+        $params = array_merge( $params, $this->params );
+
         $functions = $this->get_functions();
 
         if( ! empty( $functions ) ) {
-            $fields["functions"] = $functions;
-            $fields["function_call"] = $this->function_call;
+            $params["functions"] = $functions;
+            $params["function_call"] = $this->function_call;
         }
 
         // make ChatGPT API request
@@ -164,7 +179,7 @@ class ChatGPT {
         curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
 
         if( $stream_type ) {
-            $fields["stream"] = true;
+            $params["stream"] = true;
 
             $response_text = "";
 
@@ -180,7 +195,7 @@ class ChatGPT {
         }
 
         curl_setopt( $ch, CURLOPT_POSTFIELDS, json_encode(
-            $fields
+            $params
         ) );
 
         $curl_exec = curl_exec( $ch );

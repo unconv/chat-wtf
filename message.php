@@ -57,6 +57,10 @@ try {
         $chatgpt->set_model( $settings['model'] );
     }
 
+    if( isset( $settings['params'] ) ) {
+        $chatgpt->set_params( $settings['params'] );
+    }
+
     foreach( $context as $message ) {
         switch( $message['role'] ) {
             case "user":

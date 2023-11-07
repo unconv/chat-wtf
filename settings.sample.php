@@ -18,6 +18,12 @@ return [
     // model to use in OpenAI API
     "model" => "gpt-3.5-turbo",
 
+    // custom parameters for ChatGPT
+    "params" => [
+        //"temperature" => 0.9,
+        //"max_tokens" => 256,
+    ],
+
     // base uri of app (e.g. /my/app/path)
     "base_uri" => "",
 
