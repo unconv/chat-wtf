@@ -50,7 +50,11 @@ class CodeInterpreter {
         if( $args === null ) {
             $code = $arguments;
         } else {
-            $code = $args->code;
+            if( isset( $args->code ) ) {
+                $code = $args->code;
+            } else {
+                $code = "";
+            }
         }
 
         $code = self::fix_code_hallucinations( $code );
