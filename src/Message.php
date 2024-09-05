@@ -9,7 +9,8 @@ class Message {
         if( in_array( $role, [
             "user",
             "assistant",
-            "function",
+            "tool",
+            "function", // Backward compatibility
         ] ) ) {
             if( $content === null ) {
                 throw new \Exception( sprintf( "Content is required for message of role '%s'", $role ) );

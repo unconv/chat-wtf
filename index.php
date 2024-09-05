@@ -128,7 +128,8 @@ $current_mode_name = $mode_names[$current_mode];
                 $classmap = [
                     "assistant" => "assistant",
                     "user" => "user",
-                    "function" => "assistant",
+                    "tool" => "assistant",
+                    "function" => "assistant", // Backward compatibility
                     "function_call" => "assistant",
                 ];
 
@@ -150,7 +151,10 @@ $current_mode_name = $mode_names[$current_mode];
                     } else {
                         $message_content = htmlspecialchars( "<unknown function>" );
                     }
-                } elseif( $role === "function" ) {
+                } elseif(
+                    $role === "tool" ||
+                    $role === "function" // Backward compatibility
+                ) {
                     $result_text = CodeInterpreter::parse_result( $chat_message->content );
                     $function_result = htmlspecialchars( "Result from code:\n\n```\n" . $result_text . "\n```\n\n" );
                     continue;

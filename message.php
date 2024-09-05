@@ -62,8 +62,6 @@ if( isset( $_POST['message'] ) ) {
         content: $_POST['message'],
     );
 
-    $conversation->add_message( $message );
-
     if(
         $code_interpreter_enabled &&
         $last_message &&
@@ -76,10 +74,27 @@ if( isset( $_POST['message'] ) ) {
         $response = $code_interpreter->python( $code );
 
         $message = new Message(
-            role: "function",
+            role: "tool",
             content: $response,
             function_name: "python",
         );
+
+        $conversation->add_message( $message );
+    } else {
+        if(
+            $code_interpreter_enabled &&
+            $last_message &&
+            $last_message->role === "function_call" &&
+            $last_message->function_name === "python"
+        ) {
+            $msg = new Message(
+                role: "tool",
+                content: "User denied running the code. Ask what they want to do.",
+                function_name: "python",
+            );
+
+            $conversation->add_message( $msg );
+        }
 
         $conversation->add_message( $message );
     }
@@ -117,9 +132,23 @@ try {
                 $chatgpt->amessage( $message->content );
                 break;
             case "function_call":
-                $chatgpt->fcall( $message->function_name, $message->function_arguments );
+                $chatgpt->amessage(
+                    tool_calls: [
+                        (object) [
+                            // TODO: Add support for real function ID
+                            "id" => $message->function_name,
+                            "type" => "function",
+                            "function" => (object) [
+                                "name" => $message->function_name,
+                                "arguments" => $message->function_arguments,
+                            ]
+                        ]
+                    ]
+                );
                 break;
-            case "function":
+            case "function": // Backward compatibility
+            case "tool":
+                // TODO: Add support for real function ID
                 $chatgpt->fresult( $message->function_name, $message->content );
                 break;
             case "system":
@@ -129,7 +158,10 @@ try {
     }
 
     if( $code_interpreter_enabled ) {
-        $response = $chatgpt->response( raw_function_response: true );
+        $response = $chatgpt->response(
+            raw_function_response: true,
+            stream_type: StreamType::Event
+        );
 
         if( isset( $response->function_call ) ) {
             $code = CodeInterpreter::parse_arguments( $response->function_call->arguments );
@@ -156,15 +188,17 @@ try {
 
         $response_text = $response->content;
 
+        // TODO: This doesn't work with streaming anymore
         $last_message = $context[count( $context ) - 1] ?? null;
-        if( $last_message->role === "function" ) {
+        if(
+            $last_message->role === "tool" ||
+            $last_message->role === "function" // Backward compatibility
+        ) {
             $result_text = CodeInterpreter::parse_result( $last_message->content );
             $extra_response = "Result from code:\n```\n" . $result_text . "\n```\n\n";
         } else {
             $extra_response = "";
         }
-
-        $code_interpreter->fake_stream( $extra_response . $response_text );
     } else {
         $response_text = $chatgpt->stream( StreamType::Event )->content;
     }
