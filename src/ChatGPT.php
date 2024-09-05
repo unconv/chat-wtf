@@ -365,9 +365,7 @@ class ChatGPT {
                 continue;
             }
 
-            if( isset( $json->choices[0]->delta->content ) ) {
-                $content = $json->choices[0]->delta->content;
-            } elseif( isset( $json->choices[0]->delta->tool_calls ) ) {
+            if( isset( $json->choices[0]->delta->tool_calls ) ) {
                 foreach( $json->choices[0]->delta->tool_calls as $tool_call ) {
                     if( ! isset( $functions[$tool_call->index] ) ) {
                         $functions[$tool_call->index] = new stdClass;
@@ -410,6 +408,10 @@ class ChatGPT {
                         $functions[$tool_call->index]->function->arguments .= $tool_call->function->arguments;
                     }
                 }
+            }
+
+            if( isset( $json->choices[0]->delta->content ) ) {
+                $content = $json->choices[0]->delta->content;
             }
 
             $response_text .= $content;
