@@ -62,31 +62,27 @@ if( isset( $_POST['message'] ) ) {
         content: $_POST['message'],
     );
 
-    if(
+    $wants_to_run_code = (
         $code_interpreter_enabled &&
         $last_message &&
         $last_message->role === "function_call" &&
-        $last_message->function_name === "python" &&
-        $_POST['message'] === "Yes, run the code."
-    ) {
-        $code = CodeInterpreter::parse_arguments( $last_message->function_arguments );
+        $last_message->function_name === "python"
+    );
 
-        $response = $code_interpreter->python( $code );
+    if( $wants_to_run_code ) {
+        if( $_POST['message'] === "Yes, run the code." ) {
+            $code = CodeInterpreter::parse_arguments( $last_message->function_arguments );
 
-        $message = new Message(
-            role: "tool",
-            content: $response,
-            function_name: "python",
-        );
+            $response = $code_interpreter->python( $code );
 
-        $conversation->add_message( $message );
-    } else {
-        if(
-            $code_interpreter_enabled &&
-            $last_message &&
-            $last_message->role === "function_call" &&
-            $last_message->function_name === "python"
-        ) {
+            $message = new Message(
+                role: "tool",
+                content: $response,
+                function_name: "python",
+            );
+
+            $conversation->add_message( $message );
+        } else {
             $msg = new Message(
                 role: "tool",
                 content: "User denied running the code. Ask what they want to do.",
@@ -95,7 +91,7 @@ if( isset( $_POST['message'] ) ) {
 
             $conversation->add_message( $msg );
         }
-
+    } else {
         $conversation->add_message( $message );
     }
 
