@@ -123,6 +123,10 @@ try {
         $chatgpt->set_params( $settings['params'] );
     }
 
+    if( isset( $settings['params'] ) ) {
+        $chatgpt->set_params( $settings['params'] );
+    }
+
     foreach( $context as $message ) {
         switch( $message->role ) {
             case "user":
