@@ -38,6 +38,15 @@ return [
         "password" => null,
     ],
 
+    // CodeInterpreter settings
+    "code_interpreter" => [
+        "enabled" => false,
+        "sandbox" => [
+            "enabled" => false,
+            "container" => "chatwtf-sandbox",
+        ]
+    ],
+
     // ElevenLabs settings
     "elevenlabs_api_key" => "",
     "speech_enabled" => false,

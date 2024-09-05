@@ -33,6 +33,18 @@ Database config has to be put into `settings.php` (see `settings.sample.php`). Y
 
 You will need an API key from OpenAI to use the code. The API key must be added to the `settings.sample.php` file, which you will need to rename to `settings.php`.
 
+## CodeInterpreter
+
+By default, CodeInterpreter mode **runs Python code directly on your machine** but it asks for confirmation first. To enable a sandbox environment with Docker, change `code_interpreter` > `sandbox` > `enabled` to `true` in `settings.php` and set `code_interpreter` > `sandbox` > `container` to the name of the Python sandbox Docker container.
+
+You can create such a sandbox container by running:
+
+```shell
+$ sudo docker build -t chatwtf-sandbox ./sandbox
+```
+
+Note that the sandbox doesn't work (and might not be needed) if you're already running the project inside a Docker container.
+
 ## Modify to your liking
 
 You can change the system message in the settings to make the chatbot do what you want.

@@ -22,7 +22,30 @@ if( $base_uri != "" ) {
     $base_uri = rtrim( $base_uri, "/" ) . "/";
 }
 
-$speech_enabled = isset( $settings['speech_enabled'] ) && $settings['speech_enabled'];
+$speech_enabled = ( $settings['speech_enabled'] ?? false ) === true;
+
+$current_model = $conversation?->get_model() ?? $settings['model'];
+$current_mode = $conversation?->get_mode() ?? "normal";
+
+if( empty( $current_mode ) ) {
+    $current_mode = "normal";
+}
+
+$mode_icons = [
+    "normal" => "message",
+    "speech" => "volume-high",
+    "code_interpreter" => "terminal",
+];
+
+$current_mode_icon = $mode_icons[$current_mode];
+
+$mode_names = [
+    "normal" => "",
+    "speech" => "(Speech)",
+    "code_interpreter" => "(CodeInterpreter)",
+];
+
+$current_mode_name = $mode_names[$current_mode];
 
 ?>
 <!DOCTYPE html>
@@ -42,6 +65,8 @@ $speech_enabled = isset( $settings['speech_enabled'] ) && $settings['speech_enab
         let chat_id = <?php echo intval( $chat_id ); ?>;
         let new_chat = <?php echo $new_chat ? "true" : "false"; ?>;
         let speech_enabled = <?php echo $speech_enabled ? "true" : "false"; ?>;
+        let chatgpt_model = '<?php echo $current_model; ?>';
+        let selected_mode = '<?php echo $current_mode; ?>';
     </script>
 </head>
 <body>
@@ -88,33 +113,64 @@ $speech_enabled = isset( $settings['speech_enabled'] ) && $settings['speech_enab
     <main>
         <div class="view conversation-view <?php echo $chat_id ? "show" : ""; ?>" id="chat-messages">
             <div class="model-name">
-                <i class="fa fa-bolt"></i> Default (GPT-3.5)
+                <i class="fa fa-bolt"></i> <span class="current-model"><?php echo ( str_contains( $current_model, "gpt-4" ) ? "GPT-4" : "GPT-3.5" ) ?></span> <span class="current-mode-name"><?php echo $current_mode_name; ?></span>
             </div>
             <?php
             $chat_history = $chat_id ? $conversation->get_messages( $chat_id, $db ) : [];
 
+            $function_result = "";
             foreach( $chat_history as $chat_message ) {
-                if( $chat_message["role"] === "system" ) {
+                if( $chat_message->role === "system" ) {
                     continue;
                 }
-                $role = htmlspecialchars( $chat_message['role'] );
+                $role = htmlspecialchars( $chat_message->role );
 
-                if( $role === "assistant" ) {
+                $classmap = [
+                    "assistant" => "assistant",
+                    "user" => "user",
+                    "tool" => "assistant",
+                    "function" => "assistant", // Backward compatibility
+                    "function_call" => "assistant",
+                ];
+
+                $message_class = $classmap[$role];
+
+                if( $message_class === "assistant" ) {
                     $user_icon_class = "gpt";
                     $user_icon_letter = "G";
                 } else {
                     $user_icon_class = "";
                     $user_icon_letter = "U";
                 }
+
+                $message_content = "";
+                if( $role === "function_call" ) {
+                    if( $chat_message->function_name === "python" ) {
+                        $code = CodeInterpreter::parse_arguments( $chat_message->function_arguments );
+                        $message_content = htmlspecialchars( "I want to run the following code:\n\n```\n" . $code . "\n```" );
+                    } else {
+                        $message_content = htmlspecialchars( "<unknown function>" );
+                    }
+                } elseif(
+                    $role === "tool" ||
+                    $role === "function" // Backward compatibility
+                ) {
+                    $result_text = CodeInterpreter::parse_result( $chat_message->content );
+                    $function_result = htmlspecialchars( "Result from code:\n\n```\n" . $result_text . "\n```\n\n" );
+                    continue;
+                } else {
+                    $message_content = $function_result . htmlspecialchars( $chat_message->content );
+                    $function_result = "";
+                }
                 ?>
-                <div class="<?php echo $role; ?> message">
+                <div class="<?php echo $message_class; ?> message">
                     <div class="identity">
                         <i class="<?php echo $user_icon_class; ?> user-icon">
                             <?php echo $user_icon_letter; ?>
                         </i>
                     </div>
                     <div class="content">
-                        <?php echo htmlspecialchars( $chat_message['content'] ); ?>
+                        <?php echo $message_content; ?>
                     </div>
                 </div>
                 <?php
@@ -122,27 +178,59 @@ $speech_enabled = isset( $settings['speech_enabled'] ) && $settings['speech_enab
             ?>
         </div>
         <div class="view new-chat-view <?php echo $chat_id ? "" : "show"; ?>">
-            <div class="model-selector" onclick="alert('Model selector not implemented yet :(');">
-                <button class="gpt-3 selected">
-                    <i class="fa fa-bolt"></i> GPT-3.5
-                    <div class="model-info">
-                        <div class="model-info-box">
-                            <p>Our fastest model, great for most every day tasks.</p>
+            <div class="top-menu">
+                <div class="model-selector">
+                    <div class="model-button button gpt-3 <?php echo ( ! str_contains( $current_model, "gpt-4" ) ? "selected" : "" ); ?>" data-model="gpt-3.5-turbo" data-name="GPT-3.5">
+                        <i class="fa fa-bolt"></i> GPT-3.5
+                        <div class="model-info">
+                            <div class="model-info-box">
+                                <p>Our fastest model, great for most every day tasks.</p>
 
-                            <p class="secondary">Available to Free and Plus users</p>
+                                <p class="secondary">Available to Free and Plus users</p>
+                            </div>
                         </div>
                     </div>
-                </button>
-                <button class="gpt-4">
-                    <i class="fa fa-wand-magic-sparkles"></i> GPT-4
-                    <div class="model-info">
-                        <div class="model-info-box">
-                            <p>Our most capable model, great for creative stuff.</p>
+                    <div class="model-button button gpt-4 <?php echo ( str_contains( $current_model, "gpt-4" ) ? "selected" : "" ); ?>" data-model="gpt-4" data-name="GPT-4">
+                        <i class="fa fa-wand-magic-sparkles"></i> GPT-4
+                        <div class="model-info">
+                            <div class="model-info-box">
+                                <p>Our most capable model, great for creative stuff.</p>
 
-                            <p class="secondary">Available for Plus users.</p>
+                                <p class="secondary">Available for Plus users.</p>
+                            </div>
                         </div>
                     </div>
-                </button>
+                </div>
+                <?php
+                $options = [
+                    "normal" => ["Normal", "message"],
+                ];
+                if( ( $settings['speech_enabled'] ?? false ) === true ) {
+                    $options["speech"] = ["Speech", "volume-high"];
+                }
+                if( ( $settings['code_interpreter']['enabled'] ?? false ) === true ) {
+                    $options["code_interpreter"] = ["CodeInterpreter", "terminal"];
+                }
+                if( count( $options ) > 1 ) {
+                    ?>
+                    <div class="mode-selector button">
+                        <i class="fa fa-<?php echo $current_mode_icon; ?> current-mode-icon" data-icon="<?php echo $current_mode_icon; ?>"></i>
+                        <div class="mode-selector-wrap">
+                            <ul>
+                                <?php
+                                foreach( $options as $option => $value ) {
+                                    $name = htmlspecialchars( $value[0] );
+                                    $icon = htmlspecialchars( $value[1] );
+
+                                    echo '<li><button data-mode="'.htmlspecialchars( $option ).'" data-icon="'.$icon.'"><i class="fa fa-'.$icon.'"></i> '.$name.'</button></li>';
+                                }
+                                ?>
+                            </ul>
+                        </div>
+                    </div>
+                    <?php
+                }
+                ?>
             </div>
 
             <div class="logo">

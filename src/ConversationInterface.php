@@ -6,19 +6,30 @@ interface ConversationInterface
      */
     public function get_chats(): array;
 
-    public function find( int $chat_id  ): self|false;
+    public function find( int $chat_id  ): self|null;
 
-    public function get_messages();
+    /**
+     * @return array<Message>
+     */
+    public function get_messages(): array;
 
-    public function add_message( $message ): bool;
+    public function add_message( Message $message ): bool;
 
     public function set_id( string $id );
 
     public function set_title( string $title );
 
+    public function set_mode( string $mode );
+
+    public function set_model( string $model );
+
     public function get_id();
 
     public function get_title();
+
+    public function get_mode();
+
+    public function get_model();
 
     public function save(): int;
 

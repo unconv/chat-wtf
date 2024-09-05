@@ -3,6 +3,30 @@ const send_button = document.querySelector( "#send-button" );
 const message_list = document.querySelector( "#chat-messages" );
 const new_chat_link = document.querySelector( "li.new-chat" );
 const conversations_list = document.querySelector( "ul.conversations" );
+const mode_buttons = document.querySelectorAll( ".mode-selector button" );
+const current_mode_icon = document.querySelector( ".current-mode-icon" );
+const current_mode_name = document.querySelector( ".current-mode-name" );
+
+const mode_names = {
+    "normal": "",
+    "speech": "(Speech)",
+    "code_interpreter": "(CodeInterpreter)"
+};
+
+mode_buttons.forEach( (button) => {
+    button.addEventListener( "click", () => {
+        selected_mode = button.getAttribute( "data-mode" );
+
+        const new_icon = button.getAttribute( "data-icon" );
+        const old_icon = current_mode_icon.getAttribute( "data-icon" );
+
+        current_mode_icon.classList.remove( "fa-" + old_icon );
+        current_mode_icon.classList.add( "fa-" + new_icon );
+        current_mode_icon.setAttribute( "data-icon", new_icon);
+
+        current_mode_name.textContent = mode_names[selected_mode];
+    } );
+} );
 
 const markdown_converter = new showdown.Converter({
     requireSpaceBeforeHeadingText: true,
@@ -19,7 +43,7 @@ message_input.addEventListener( "keydown", function( e ) {
     }
 } );
 
-// detect Enter on message input to send message
+// detect click on send button to send message
 send_button.addEventListener( "click", function( e ) {
     e.preventDefault();
     submit_message();
@@ -30,8 +54,9 @@ send_button.addEventListener( "click", function( e ) {
  * Submits the currently typed in message to ChatWTF
  */
 function submit_message() {
+    message_box.style.height = "auto";
     add_message( "user", escapeHtml( message_input.value ) );
-    send_message();
+    send_message( message_input.value );
 }
 
 /**
@@ -103,10 +128,8 @@ class AudioQueue {
  * Sends a message to ChatGPT and appends the
  * message and the response to the chat
  */
-async function send_message() {
+async function send_message( message_text ) {
     show_view( ".conversation-view" );
-
-    let question = message_input.value;
 
     // intialize message with blinking cursor
     let message = add_message( "assistant", '<div id="cursor"></div>' );
@@ -117,7 +140,9 @@ async function send_message() {
     // send message
     let data = new FormData();
     data.append( "chat_id", chat_id );
-    data.append( "message", question );
+    data.append( "model", chatgpt_model );
+    data.append( "mode", selected_mode );
+    data.append( "message", message_text );
 
     // send message and get chat id
     chat_id = await fetch( base_uri + "message.php", {
@@ -129,7 +154,7 @@ async function send_message() {
 
     // listen for response tokens
     const eventSource = new EventSource(
-        base_uri + "message.php?chat_id=" + chat_id
+        base_uri + "message.php?chat_id=" + chat_id + "&model=" + chatgpt_model + "&mode=" + selected_mode
     );
 
     // handle errors
@@ -148,12 +173,29 @@ async function send_message() {
     eventSource.addEventListener( "message", function( event ) {
         let json = JSON.parse( event.data );
 
+        if( json.hasOwnProperty( "role" ) && json.role === "function_call" ) {
+            if( json.function_name === "python" ) {
+                const args = JSON.parse( json.function_arguments );
+                update_message( message, "I would like to run the following code:\n\n```\n" + args.code + "\n```" );
+
+                message.querySelector(".content").insertAdjacentHTML( "beforeend", `
+                    <div class="action-selector">
+                        <button class="run-code">Run code</button>
+                        <button class="dont-run-code">Don't run code</button>
+                    </div>
+                ` );
+            }
+            return;
+        }
+
+        const speech_mode = selected_mode === "speech";
+
         // append token to response
         response += json.content;
         paragraph += json.content;
 
         if( paragraph.indexOf( "\n\n" ) !== -1 ) {
-            if( speech_enabled && paragraph.trim() !== "" ) {
+            if( speech_mode && paragraph.trim() !== "" ) {
                 audio_queue.add( paragraph );
             }
 
@@ -173,15 +215,17 @@ async function send_message() {
     eventSource.addEventListener( "stop", async function( event ) {
         eventSource.close();
 
+        const speech_mode = selected_mode === "speech";
+
         if( new_chat ) {
             let title_link = create_chat_link( chat_id );
 
-            create_title( question, response, title_link, chat_id );
+            create_title( message_text, response, title_link, chat_id );
 
             new_chat = false;
         }
 
-        if( speech_enabled && paragraph.trim() !== "" ) {
+        if( speech_mode && paragraph.trim() !== "" ) {
             audio_queue.add( paragraph );
             paragraph = "";
         }
@@ -345,6 +389,14 @@ function create_copy_button( text_to_copy ) {
     return copy_button;
 }
 
+function convert_links( text ) {
+    text = text.replace( /\(data\//g, '(data/' + chat_id + '/data/' );
+    text = text.replace( /\(sandbox:\/data\//g, '(data/' + chat_id + '/data/' );
+    text = text.replace( /\(sandbox:\/mnt\/data\//g, '(data/' + chat_id + '/data/' );
+    text = text.replace( /\(sandbox:data\//g, '(data/' + chat_id + '/data/' );
+    return text;
+}
+
 /**
  * Converts Markdown formatted response into HTML
  *
@@ -352,6 +404,7 @@ function create_copy_button( text_to_copy ) {
  * @returns HTML formatted text
  */
 function convert_markdown( text ) {
+    text = convert_links( text );
     text = text.trim();
 
     // add ending code block tags when missing
@@ -392,6 +445,8 @@ function convert_markdown( text ) {
         }
     }
 
+    formatted_message = formatted_message.replace( '<a href=', '<a target="_blank" href=' );
+
     return formatted_message;
 }
 
@@ -424,9 +479,24 @@ document.addEventListener( "DOMContentLoaded", function() {
 
     // event listeners
     document.body.addEventListener( "click", function(e) {
-        const button = e.target.closest( "button.delete" );
-        if( button ) {
-            delete_button_action( button );
+        const delete_button = e.target.closest( "button.delete" );
+        if( delete_button ) {
+            delete_button_action( delete_button );
+            return;
+        }
+
+        if( e.target.closest( ".run-code" ) ) {
+            add_message( "user", "Yes, run the code." );
+            send_message( "Yes, run the code." );
+            e.target.closest( ".action-selector" ).remove();
+            return;
+        }
+
+        if( e.target.closest( ".dont-run-code" ) ) {
+            add_message( "user", "No, don't run the code." );
+            send_message( "No, don't run the code." );
+            e.target.closest( ".action-selector" ).remove();
+            return;
         }
     } );
 

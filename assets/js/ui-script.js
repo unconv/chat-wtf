@@ -23,12 +23,17 @@ show_user_menu.addEventListener( "click", function() {
     }
 } );
 
-const models = document.querySelectorAll(".model-selector button");
+const models = document.querySelectorAll(" .model-button");
 
 for( const model of models ) {
-    model.addEventListener("click", function() {
-        document.querySelector(".model-selector button.selected")?.classList.remove("selected");
+    model.addEventListener("click", () => {
+        document.querySelector(".model-button.selected")?.classList.remove("selected");
         model.classList.add("selected");
+        chatgpt_model = model.getAttribute("data-model");
+        chatgpt_model_name = model.getAttribute("data-name");
+        document.querySelectorAll( ".current-model" ).forEach( (e) => {
+            e.textContent = chatgpt_model_name;
+        } );
     });
 }
 

@@ -15,10 +15,8 @@ function chatgpt_create_title(
     string $question,
     string $answer,
     string $api_key,
-    string $model = "gpt-3.5-turbo"
 ): string {
     $chatgpt = new ChatGPT( $api_key );
-    $chatgpt->set_model( $model );
     $chatgpt->smessage( "Create a short title to be used in a conversation list in a chatbot. It should describe what the conversation is about (not a 'book title')" );
     $chatgpt->umessage( "Create a concise title for the following chat conversation:\nQ: " . $question . "\nA: " . $answer );
 
