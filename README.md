@@ -35,7 +35,7 @@ You will need an API key from OpenAI to use the code. The API key must be added 
 
 ## CodeInterpreter
 
-By default, CodeInterpreter mode **runs Python code directly on your machine** but it asks for confirmation first. To enable a sandbox environment with Docker, change `code_interpreter` > `sandbox` > `enabled` to `true` in `settings.php` and set `code_interpreter` > `sandbox` > `container` to the name of the Python sandbox Docker container.
+By default (when enabled from `settings.php`), CodeInterpreter mode **runs Python code directly on your machine** but it asks for confirmation first. To enable a sandbox environment with Docker, change `code_interpreter` > `sandbox` > `enabled` to `true` in `settings.php` and set `code_interpreter` > `sandbox` > `container` to the name of the Python sandbox Docker container.
 
 You can create such a sandbox container by running:
 
