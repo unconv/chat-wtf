@@ -42,8 +42,10 @@ CREATE TABLE `conversations` (
 
 CREATE TABLE `messages` (
   `id` int NOT NULL,
-  `role` varchar(9) COLLATE utf8mb4_swedish_ci NOT NULL,
+  `role` varchar(13) COLLATE utf8mb4_swedish_ci NOT NULL,
   `content` text COLLATE utf8mb4_swedish_ci NOT NULL,
+  `function_name` varchar(64) COLLATE utf8mb4_swedish_ci NULL,
+  `function_arguments` text COLLATE utf8mb4_swedish_ci NULL,
   `timestamp` datetime NOT NULL,
   `conversation` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
