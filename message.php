@@ -178,19 +178,29 @@ try {
         );
 
         if( isset( $response->function_call ) ) {
-            $code = CodeInterpreter::parse_arguments( $response->function_call->arguments );
+            $function_call = $response->function_call;
+        } elseif( ! empty( $response->tool_calls ) ) {
+            // TODO: Support multiple functions or force
+            // ChatGPT to call only one function at a time
+            $function_call = $response->tool_calls[0]->function;
+        } else {
+            $function_call = null;
+        }
+
+        if( isset( $function_call ) ) {
+            $code = CodeInterpreter::parse_arguments( $function_call->arguments );
 
             echo "data: " . json_encode( [
                 "role" => "function_call",
-                "function_name" => $response->function_call->name,
+                "function_name" => $function_call->name,
                 "function_arguments" => json_encode( ["code" => $code] ),
             ] ) . "\n\n";
             flush();
 
             $message = new Message(
                 role: "function_call",
-                function_name: $response->function_call->name,
-                function_arguments: $response->function_call->arguments,
+                function_name: $function_call->name,
+                function_arguments: $function_call->arguments,
             );
 
             $conversation->add_message( $message );
