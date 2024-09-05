@@ -162,6 +162,20 @@ try {
     }
 
     if( $code_interpreter_enabled ) {
+        $last_message = $context[count( $context ) - 1] ?? null;
+        if(
+            $last_message->role === "tool" ||
+            $last_message->role === "function" // Backward compatibility
+        ) {
+            $result_text = CodeInterpreter::parse_result( $last_message->content );
+            $result_response = "Result from code:\n```\n" . $result_text . "\n```\n\n";
+
+            echo "data: " . json_encode( [
+                "content" => $result_response,
+            ] ) . "\n\n";
+            flush();
+        }
+
         $response = $chatgpt->response(
             raw_function_response: true,
             stream_type: StreamType::Event
@@ -191,18 +205,6 @@ try {
         }
 
         $response_text = $response->content;
-
-        // TODO: This doesn't work with streaming anymore
-        $last_message = $context[count( $context ) - 1] ?? null;
-        if(
-            $last_message->role === "tool" ||
-            $last_message->role === "function" // Backward compatibility
-        ) {
-            $result_text = CodeInterpreter::parse_result( $last_message->content );
-            $extra_response = "Result from code:\n```\n" . $result_text . "\n```\n\n";
-        } else {
-            $extra_response = "";
-        }
     } else {
         $response_text = $chatgpt->stream( StreamType::Event )->content;
     }
