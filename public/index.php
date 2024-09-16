@@ -64,7 +64,7 @@ $current_mode_name = $mode_names[$current_mode];
     <title>ChatWTF</title>
     <script>
         let base_uri = '<?php echo $base_uri; ?>';
-        let chat_id = '<?php echo htmlspecialchars( $chat_id ); ?>';
+        let chat_id = '<?php echo htmlspecialchars( $chat_id ?? '' ); ?>';
         let new_chat = <?php echo $new_chat ? "true" : "false"; ?>;
         let speech_enabled = <?php echo $speech_enabled ? "true" : "false"; ?>;
         let chatgpt_model = '<?php echo $current_model; ?>';
