@@ -1,14 +1,14 @@
 <?php
 require( __DIR__ . "/../autoload.php" );
 
-if( ! isset( $_GET['chat_id'] ) ) {
+if( empty( $_GET['chat_id'] ) ) {
     http_response_code( 400 );
     die( "You didn't provide a chat_id" );
 }
 
 $chat_id = Uuid::sanitize( $_GET['chat_id'] );
 
-if( ! isset( $_GET['file'] ) ) {
+if( empty( $_GET['file'] ) ) {
     http_response_code( 400 );
     die( "You didn't provide a file" );
 }
