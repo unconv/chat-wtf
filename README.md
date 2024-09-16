@@ -6,10 +6,10 @@ This is a ChatGPT-like chatbot that uses the ChatGPT API. It was created for my 
 
 1. Clone the repository
 2. Add your OpenAI API key to `settings.php` (see `settings.sample.php`)
-3. Start a server
+3. Start a server in `public/`
 
 ```console
-$ php -S localhost:8080
+$ php -S localhost:8080 -t public
 ```
 
 4. Go to http://localhost:8080
