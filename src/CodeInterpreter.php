@@ -86,9 +86,19 @@ class CodeInterpreter {
         if( str_contains( $result->output, "Traceback" ) ) {
             return $result->output;
         } else {
-            // TODO: handle parsing last output line better
+            // TODO: Handle getting output of code better
             $lines = explode( ">>>", $result->output );
-            return trim( $lines[count($lines)-1] ) ?: "<no output>";
+
+            $last_output = "<no output>";
+
+            foreach( $lines as $line ) {
+                $line = trim( $line );
+
+                if( ! empty( $line ) ) {
+                    $last_output = $line;
+                }
+            }
+            return $last_output;
         }
     }
 
