@@ -28,10 +28,11 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `conversations` (
-  `id` int NOT NULL,
+  `id` VARCHAR(36) NOT NULL,
   `title` varchar(64) COLLATE utf8mb4_swedish_ci NOT NULL,
   `model` varchar(64) COLLATE utf8mb4_swedish_ci NOT NULL,
-  `mode` varchar(16) COLLATE utf8mb4_swedish_ci NOT NULL
+  `mode` varchar(16) COLLATE utf8mb4_swedish_ci NOT NULL,
+  `created_time` DATETIME NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 -- --------------------------------------------------------
@@ -47,7 +48,7 @@ CREATE TABLE `messages` (
   `function_name` varchar(64) COLLATE utf8mb4_swedish_ci NULL,
   `function_arguments` text COLLATE utf8mb4_swedish_ci NULL,
   `timestamp` datetime NOT NULL,
-  `conversation` int NOT NULL
+  `conversation` VARCHAR(36) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 --
@@ -70,12 +71,6 @@ ALTER TABLE `messages`
 --
 -- AUTO_INCREMENT for dumped tables
 --
-
---
--- AUTO_INCREMENT for table `conversations`
---
-ALTER TABLE `conversations`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `messages`

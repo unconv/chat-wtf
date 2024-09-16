@@ -1,10 +1,11 @@
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 CREATE TABLE IF NOT EXISTS "conversations" (
-	"id" INTEGER NOT NULL  ,
+	"id" VARCHAR(36) NOT NULL  ,
 	"title" VARCHAR(64) NOT NULL  ,
 	"model" VARCHAR(64) NOT NULL  ,
 	"mode" VARCHAR(16) NOT NULL  ,
+	"created_time" DATETIME NULL  ,
 	PRIMARY KEY ("id")
 );
 CREATE TABLE IF NOT EXISTS "messages" (
@@ -14,7 +15,7 @@ CREATE TABLE IF NOT EXISTS "messages" (
 	"function_name" VARCHAR(64) NULL DEFAULT NULL  ,
 	"function_arguments" TEXT NULL DEFAULT NULL  ,
 	"timestamp" DATETIME NOT NULL  ,
-	"conversation" INTEGER NOT NULL  ,
+	"conversation" VARCHAR(36) NOT NULL  ,
 	PRIMARY KEY ("id")
 );
 CREATE INDEX "conversation" ON "messages" ("conversation");
