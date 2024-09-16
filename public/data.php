@@ -19,19 +19,19 @@ $chat_dir = realpath( __DIR__ . "/../data/" . $chat_id );
 
 if( ! $chat_dir ) {
     http_response_code( 404 );
-    die( "File not found 1" );
+    die( "File not found" );
 }
 
 $filepath = realpath( $chat_dir . "/" . $file );
 
 if( ! $filepath ) {
     http_response_code( 404 );
-    die( "File not found 2" );
+    die( "File not found" );
 }
 
 if( strpos( $filepath, $chat_dir . "/" ) !== 0 ) {
     http_response_code( 404 );
-    die( "File not found 3" );
+    die( "File not found" );
 }
 
 header( "Content-type: " . mime_content_type( $filepath ) );
