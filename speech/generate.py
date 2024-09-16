@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from elevenlabs import set_api_key, save, generate
+from elevenlabs.client import ElevenLabs
+from elevenlabs import save
 import sys
 import os
 
@@ -25,7 +26,9 @@ if not elevenlabs_api_key:
     print("ERROR: No API key provided")
     print_usage()
 
-set_api_key(elevenlabs_api_key)
+client = ElevenLabs(
+    api_key=elevenlabs_api_key,
+)
 
 input_file = sys.argv[1]
 output_file = sys.argv[2]
@@ -33,6 +36,8 @@ output_file = sys.argv[2]
 with open(input_file, "r") as f:
     input_text = f.read()
 
-audio = generate(input_text)
+audio = client.generate(
+    text=input_text,
+)
 
 save(audio, output_file)
