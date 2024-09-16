@@ -1,17 +1,19 @@
 <?php
-$settings = require( __DIR__ . "/settings.php" );
-require( __DIR__ . "/database.php" );
-require( __DIR__ . "/autoload.php" );
+$settings = require( __DIR__ . "/../settings.php" );
+require( __DIR__ . "/../database.php" );
+require( __DIR__ . "/../autoload.php" );
 
 $db = get_db();
 $conversation_class = get_conversation_class( $db );
 
-$chat_id = intval( $_GET['chat_id'] ?? 0 );
+$chat_id = $_GET['chat_id'] ?? null;
 
-$conversation = $conversation_class->find( $chat_id, $db );
+if( $chat_id ) {
+    $conversation = $conversation_class->find( $chat_id, $db );
 
-if( ! $conversation ) {
-    $chat_id = 0;
+    if( ! $conversation ) {
+        $chat_id = null;
+    }
 }
 
 $new_chat = ! $chat_id;
@@ -62,7 +64,7 @@ $current_mode_name = $mode_names[$current_mode];
     <title>ChatWTF</title>
     <script>
         let base_uri = '<?php echo $base_uri; ?>';
-        let chat_id = <?php echo intval( $chat_id ); ?>;
+        let chat_id = '<?php echo htmlspecialchars( $chat_id ); ?>';
         let new_chat = <?php echo $new_chat ? "true" : "false"; ?>;
         let speech_enabled = <?php echo $speech_enabled ? "true" : "false"; ?>;
         let chatgpt_model = '<?php echo $current_model; ?>';

@@ -251,7 +251,7 @@ async function create_text_to_speech( text ) {
             }
 
             var audio = new Audio();
-            audio.src = base_uri + "speech/output/" + data.response;
+            audio.src = "data:audio/mpeg;base64," + data.response;
 
             audio.addEventListener( 'canplaythrough', () => {
                  resolve( audio );
@@ -390,10 +390,10 @@ function create_copy_button( text_to_copy ) {
 }
 
 function convert_links( text ) {
-    text = text.replace( /\(data\//g, '(data/' + chat_id + '/data/' );
-    text = text.replace( /\(sandbox:\/data\//g, '(data/' + chat_id + '/data/' );
-    text = text.replace( /\(sandbox:\/mnt\/data\//g, '(data/' + chat_id + '/data/' );
-    text = text.replace( /\(sandbox:data\//g, '(data/' + chat_id + '/data/' );
+    text = text.replace( /\(data\//g, '(data.php?chat_id=' + chat_id + '&file=data/' );
+    text = text.replace( /\(sandbox:\/data\//g, '(data.php?chat_id=' + chat_id + '&file=data/' );
+    text = text.replace( /\(sandbox:\/mnt\/data\//g, '(data.php?chat_id=' + chat_id + '&file=data/' );
+    text = text.replace( /\(sandbox:data\//g, '(data.php?chat_id=' + chat_id + '&file=data/' );
     return text;
 }
 

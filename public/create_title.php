@@ -25,10 +25,10 @@ function chatgpt_create_title(
 
 session_start();
 
-$settings = require( __DIR__ . "/settings.php" );
+$settings = require( __DIR__ . "/../settings.php" );
 
-require( __DIR__ . "/database.php" );
-require( __DIR__ . "/autoload.php" );
+require( __DIR__ . "/../database.php" );
+require( __DIR__ . "/../autoload.php" );
 
 $db = get_db();
 $conversation_class = get_conversation_class( $db );
@@ -39,7 +39,7 @@ $title = chatgpt_create_title(
     $settings['api_key']
 );
 
-$chat_id = intval( $_POST['chat_id'] );
+$chat_id = $_POST['chat_id'];
 
 $conversation = $conversation_class->find( $chat_id, $db );
 

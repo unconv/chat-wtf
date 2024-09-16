@@ -5,9 +5,11 @@ class CodeInterpreter {
     protected array $settings;
 
     public function __construct(
-        protected int $chat_id
+        protected string $chat_id
     ) {
         $this->settings = require( __DIR__ . "/../settings.php" );
+
+        $chat_id = Uuid::sanitize( $chat_id );
 
         $this->chat_dir = "data/" . $chat_id;
         $this->data_dir = $this->chat_dir . "/data";

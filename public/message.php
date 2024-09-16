@@ -2,10 +2,10 @@
 header( "Cache-Control: no-cache" );
 if( ob_get_level() ) ob_end_clean();
 
-$settings = require( __DIR__ . "/settings.php" );
+$settings = require( __DIR__ . "/../settings.php" );
 
-require( __DIR__ . "/database.php" );
-require( __DIR__ . "/autoload.php" );
+require( __DIR__ . "/../database.php" );
+require( __DIR__ . "/../autoload.php" );
 
 $mode = $_REQUEST['mode'] ?? "normal";
 
@@ -25,7 +25,7 @@ $db = get_db();
 $conversation_class = get_conversation_class( $db );
 
 // get chat history from session
-$chat_id = intval( $_REQUEST['chat_id'] );
+$chat_id = $_REQUEST['chat_id'];
 
 $conversation = $conversation_class->find( $chat_id, $db );
 

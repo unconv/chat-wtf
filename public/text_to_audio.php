@@ -1,25 +1,13 @@
 <?php
 header( "Content-Type: application/json; charset=utf-8" );
 
-$settings = require( __DIR__ . "/settings.php" );
+$settings = require( __DIR__ . "/../settings.php" );
 
 if( ( $settings["speech_enabled"] ?? false ) !== true ) {
     die( json_encode( [
         "status" => "ERROR",
         "response" => "Speech not enabled",
     ] ) );
-}
-
-$speech_dir = __DIR__ . "/speech";
-$input_dir = $speech_dir . "/input";
-$output_dir = $speech_dir . "/output";
-
-// clean out old output files
-$old_output = glob( $speech_dir . "/output/*.wav" );
-foreach( $old_output as $file ) {
-    if( filemtime( $file ) < time() - 60 * 5 ) {
-        @unlink( $file );
-    }
 }
 
 if( ! isset( $_POST['text'] ) ) {
@@ -31,28 +19,8 @@ if( ! isset( $_POST['text'] ) ) {
 
 $text = $_POST['text'];
 
-if( ! file_exists( $input_dir ) ) {
-    if( ! @mkdir( $input_dir ) ) {
-        die( json_encode( [
-            "status" => "ERROR",
-            "response" => "Unable to creat input directory",
-        ] ) );
-    }
-}
-
-if( ! file_exists( $output_dir ) ) {
-    if( ! @mkdir( $output_dir ) ) {
-        die( json_encode( [
-            "status" => "ERROR",
-            "response" => "Unable to creat output directory",
-        ] ) );
-    }
-}
-
-$id = uniqid( more_entropy: true );
-
-$input_file = $input_dir . "/" . $id . ".txt";
-$output_file = $output_dir . "/" . $id . ".wav";
+$input_file = tempnam( sys_get_temp_dir(), "cwtftext" );
+$output_file = tempnam( sys_get_temp_dir(), "cwtfaudio" );
 
 $write = file_put_contents( $input_file, trim( $text ) );
 
@@ -63,7 +31,7 @@ if( $write === false ) {
     ] ) );
 }
 
-$speech_script = $speech_dir . "/generate.py";
+$speech_script = __DIR__ . "/../speech/generate.py";
 
 exec( "python3 " . escapeshellarg( $speech_script ) . " " . escapeshellarg( $input_file ) . " " . escapeshellarg( $output_file ) . " " . escapeshellarg( $settings['elevenlabs_api_key'] ), $output, $result_code );
 
@@ -78,7 +46,11 @@ if( ! file_exists( $output_file ) ) {
     ] ) );
 }
 
+$b64_audio = base64_encode( file_get_contents( $output_file ) );
+
+unlink( $output_file );
+
 die( json_encode( [
     "status" => "OK",
-    "response" => basename( $output_file ),
+    "response" => $b64_audio,
 ] ) );

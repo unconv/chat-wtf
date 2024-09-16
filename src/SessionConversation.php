@@ -1,7 +1,7 @@
 <?php
 class SessionConversation implements ConversationInterface
 {
-    protected int $chat_id;
+    protected string $chat_id;
     protected string $title;
     protected string $mode;
     protected string $model;
@@ -43,7 +43,7 @@ class SessionConversation implements ConversationInterface
         return $list;
     }
 
-    public function find( int $chat_id  ): self|null {
+    public function find( string $chat_id  ): self|null {
         self::init_session();
         $data = $_SESSION['chats'][$chat_id] ?? [];
 
@@ -108,9 +108,9 @@ class SessionConversation implements ConversationInterface
         return $this->model;
     }
 
-    public function save(): int {
+    public function save(): string {
         if( ! isset( $this->chat_id ) ) {
-            $this->chat_id = count( $_SESSION['chats'] ) + 1;
+            $this->chat_id = Uuid::new();
             $_SESSION['chats'][$this->chat_id] = [
                 "id" => $this->chat_id,
                 "title" => $this->title,

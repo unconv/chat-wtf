@@ -1,7 +1,7 @@
 <?php
 class SQLConversation implements ConversationInterface
 {
-    protected int $chat_id;
+    protected string $chat_id;
     protected string $title;
     protected string $mode;
     protected string $model;
@@ -14,7 +14,7 @@ class SQLConversation implements ConversationInterface
      * @return array<self>
      */
     public function get_chats(): array {
-        $stmt = $this->db->query( "SELECT id, title, mode, model FROM conversations ORDER BY id DESC" );
+        $stmt = $this->db->query( "SELECT id, title, mode, model FROM conversations ORDER BY created_time DESC, id DESC" );
         $chats = $stmt->fetchAll( PDO::FETCH_ASSOC );
 
         $list = [];
@@ -32,7 +32,7 @@ class SQLConversation implements ConversationInterface
         return $list;
     }
 
-    public function find( int $chat_id ): self|null {
+    public function find( string $chat_id ): self|null {
         $stmt = $this->db->prepare( "SELECT * FROM conversations WHERE id = :chat_id" );
         $stmt->execute( [
             ":chat_id" => $chat_id,
@@ -144,27 +144,30 @@ class SQLConversation implements ConversationInterface
         return $this->model;
     }
 
-    public function save(): int {
+    public function save(): string {
         if( ! isset( $this->chat_id ) ) {
             $stmt = $this->db->prepare( "
                 INSERT INTO conversations (
+                    id,
                     title,
                     mode,
                     model
                 ) VALUES (
+                    :id,
                     :title,
                     :mode,
                     :model
                 )"
             );
 
+            $this->chat_id = Uuid::new();
+
             $stmt->execute( [
+                ":id" => $this->chat_id,
                 ":title" => $this->title,
                 ":mode" => $this->mode,
                 ":model" => $this->model,
             ] );
-
-            $this->chat_id = $this->db->lastInsertId();
         } else {
             $stmt = $this->db->prepare( "UPDATE conversations SET title = :title, mode = :mode, model = :model WHERE id = :chat_id LIMIT 1" );
             $stmt->execute( [

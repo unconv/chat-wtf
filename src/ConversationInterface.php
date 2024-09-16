@@ -6,7 +6,7 @@ interface ConversationInterface
      */
     public function get_chats(): array;
 
-    public function find( int $chat_id  ): self|null;
+    public function find( string $chat_id  ): self|null;
 
     /**
      * @return array<Message>
@@ -31,7 +31,7 @@ interface ConversationInterface
 
     public function get_model();
 
-    public function save(): int;
+    public function save(): string;
 
     public function delete(): void;
 }
